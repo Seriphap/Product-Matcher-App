@@ -28,7 +28,7 @@ if st.button("เริ่มดึงข้อมูล"):
             continue
 
         soup = BeautifulSoup(response.text, 'html.parser')
-        product_blocks = soup.find_all('div', class_='product-item')
+        product_blocks = soup.select('div.col-md-3.col-sm-4.col-xs-6')
 
         if not product_blocks:
             st.info(f"ℹ️ หน้า {page} ไม่มีสินค้า")
@@ -36,7 +36,7 @@ if st.button("เริ่มดึงข้อมูล"):
 
         for block in product_blocks:
             img = block.find('img')
-            name = img.find_next('p') if img else None
+            name = block.find('p')
 
             image_url = img['src'] if img and 'src' in img.attrs else 'N/A'
             full_image_url = urljoin(url, image_url)
@@ -76,5 +76,3 @@ if st.button("เริ่มดึงข้อมูล"):
     # ปุ่มดาวน์โหลด CSV
     csv = df.to_csv(index=False).encode('utf-8')
     st.download_button("📥 ดาวน์โหลด CSV", csv, "products.csv", "text/csv")
-
-
