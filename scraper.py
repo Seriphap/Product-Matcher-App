@@ -12,7 +12,7 @@ if st.button("เริ่มดึงข้อมูล"):
     headers = {'User-Agent': 'Mozilla/5.0'}
     all_products = []
     os.makedirs("images", exist_ok=True)
-https://hsc-spareparts.com/products/1.html
+
     for page in range(1, 40):
         url = f'https://hsc-spareparts.com/products/{page}.html'
         st.write(f"📄 กำลังดึงหน้า {page}...")
