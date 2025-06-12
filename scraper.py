@@ -6,8 +6,8 @@ import os
 import uuid
 from urllib.parse import urljoin
 
-st.title("🛠️ Product Scraper")
-st.write("กดปุ่มด้านล่างเพื่อดึงข้อมูลสินค้า (ชื่อ + รูปภาพ) จาก 39 หน้า")
+st.title("🛠️ Product Scraper (Column-Row Structure)")
+st.write("ดึงข้อมูลสินค้า (ชื่อ + รูปภาพ) จากเว็บไซต์ hsc-spareparts.com โดยใช้โครงสร้าง column/row")
 
 if st.button("เริ่มดึงข้อมูล"):
     headers = {'User-Agent': 'Mozilla/5.0'}
@@ -15,8 +15,9 @@ if st.button("เริ่มดึงข้อมูล"):
     os.makedirs("images", exist_ok=True)
 
     progress = st.progress(0)
+    total_pages = 39
 
-    for page in range(1, 40):
+    for page in range(1, total_pages + 1):
         url = f'https://hsc-spareparts.com/products/{page}.html'
         st.write(f"📄 กำลังดึงหน้า {page}...")
 
@@ -28,37 +29,43 @@ if st.button("เริ่มดึงข้อมูล"):
             continue
 
         soup = BeautifulSoup(response.text, 'html.parser')
-        product_blocks = soup.select('div.col-md-3.col-sm-4.col-xs-6')
-
-        if not product_blocks:
-            st.info(f"ℹ️ หน้า {page} ไม่มีสินค้า")
+        plist = soup.find('div', id='plist')
+        if not plist:
+            st.warning(f"⚠️ ไม่พบ div#plist ในหน้า {page}")
+            continue
+        product_container = plist.find_all('div')[2] if len(plist.find_all('div')) >= 3 else None
+        if not product_container:
+            st.warning(f"⚠️ ไม่พบ container หลักในหน้า {page}")
             continue
 
-        for block in product_blocks:
-            img = block.find('img')
-            name = block.find('p')
+        for col in product_container.find_all('div', recursive=False):
+            for row in col.find_all('div', recursive=False):
+                a_tag = row.find('a')
+                img_tag = a_tag.find('img') if a_tag else None
+                name_tag = a_tag.find('p') if a_tag else None
 
-            image_url = img['src'] if img and 'src' in img.attrs else 'N/A'
-            full_image_url = urljoin(url, image_url)
-            product_name = name.text.strip() if name else 'N/A'
-            image_filename = f"{uuid.uuid4().hex}_{os.path.basename(full_image_url)}"
+                image_url = img_tag['src'] if img_tag and 'src' in img_tag.attrs else None
+                full_image_url = urljoin(url, image_url) if image_url else 'N/A'
+                product_name = name_tag.text.strip() if name_tag else 'N/A'
+                image_filename = f"{uuid.uuid4().hex}_{os.path.basename(full_image_url)}" if image_url else 'N/A'
 
-            # ดาวน์โหลดรูปภาพ
-            try:
-                img_data = requests.get(full_image_url, headers=headers).content
-                with open(os.path.join("images", image_filename), 'wb') as f:
-                    f.write(img_data)
-            except Exception as e:
-                st.warning(f"⚠️ โหลดรูปไม่ได้: {full_image_url} - {e}")
-                image_filename = 'N/A'
+                # ดาวน์โหลดรูปภาพ
+                if image_url:
+                    try:
+                        img_data = requests.get(full_image_url, headers=headers).content
+                        with open(os.path.join("images", image_filename), 'wb') as f:
+                            f.write(img_data)
+                    except Exception as e:
+                        st.warning(f"⚠️ โหลดรูปไม่ได้: {full_image_url} - {e}")
+                        image_filename = 'N/A'
 
-            all_products.append({
-                'Product Name': product_name,
-                'Image URL': full_image_url,
-                'Image File': image_filename
-            })
+                all_products.append({
+                    'Product Name': product_name,
+                    'Image URL': full_image_url,
+                    'Image File': image_filename
+                })
 
-        progress.progress(page / 39)
+        progress.progress(page / total_pages)
 
     df = pd.DataFrame(all_products)
     st.success("✅ ดึงข้อมูลเสร็จแล้ว!")
@@ -76,3 +83,4 @@ if st.button("เริ่มดึงข้อมูล"):
     # ปุ่มดาวน์โหลด CSV
     csv = df.to_csv(index=False).encode('utf-8')
     st.download_button("📥 ดาวน์โหลด CSV", csv, "products.csv", "text/csv")
+
