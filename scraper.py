@@ -5,16 +5,16 @@ import pandas as pd
 import os
 from urllib.parse import urljoin
 
-st.title("🛠️ HPC Pneupart Product Scraper")
+st.title("🛠️Product Scraper")
 st.write("กดปุ่มด้านล่างเพื่อดึงข้อมูลสินค้า (ชื่อ + รูปภาพ) จาก 39 หน้า")
 
 if st.button("เริ่มดึงข้อมูล"):
     headers = {'User-Agent': 'Mozilla/5.0'}
     all_products = []
     os.makedirs("images", exist_ok=True)
-
+https://hsc-spareparts.com/products/1.html
     for page in range(1, 40):
-        url = f'https://www.hpc-pneupart.com/products/{page}.html'
+        url = f'https://hsc-spareparts.com/products/{page}.html'
         st.write(f"📄 กำลังดึงหน้า {page}...")
 
         try:
