@@ -6,8 +6,8 @@ import os
 import uuid
 from urllib.parse import urljoin
 
-st.title("🛠️ Product Scraper (Column-Row Structure)")
-st.write("ดึงข้อมูลสินค้า (ชื่อ + รูปภาพ) จากเว็บไซต์ hsc-spareparts.com โดยใช้โครงสร้าง column/row")
+st.title("🛠️ Product Scraper (hsc-spareparts.com)")
+st.write("ดึงข้อมูลสินค้า (ชื่อ + รูปภาพ) จากเว็บไซต์ hsc-spareparts.com")
 
 if st.button("เริ่มดึงข้อมูล"):
     headers = {'User-Agent': 'Mozilla/5.0'}
@@ -33,23 +33,25 @@ if st.button("เริ่มดึงข้อมูล"):
         if not plist:
             st.warning(f"⚠️ ไม่พบ div#plist ในหน้า {page}")
             continue
-        product_container = plist.find_all('div')[2] if len(plist.find_all('div')) >= 3 else None
-        if not product_container:
+
+        divs = plist.find_all('div')
+        if len(divs) < 3:
             st.warning(f"⚠️ ไม่พบ container หลักในหน้า {page}")
             continue
+
+        product_container = divs[2]
 
         for col in product_container.find_all('div', recursive=False):
             for row in col.find_all('div', recursive=False):
                 a_tag = row.find('a')
                 img_tag = a_tag.find('img') if a_tag else None
-                name_tag = a_tag.find('p') if a_tag else None
+                name_tag = row.find('div', class_='name')
 
                 image_url = img_tag['src'] if img_tag and 'src' in img_tag.attrs else None
                 full_image_url = urljoin(url, image_url) if image_url else 'N/A'
                 product_name = name_tag.text.strip() if name_tag else 'N/A'
                 image_filename = f"{uuid.uuid4().hex}_{os.path.basename(full_image_url)}" if image_url else 'N/A'
 
-                # ดาวน์โหลดรูปภาพ
                 if image_url:
                     try:
                         img_data = requests.get(full_image_url, headers=headers).content
@@ -70,17 +72,15 @@ if st.button("เริ่มดึงข้อมูล"):
     df = pd.DataFrame(all_products)
     st.success("✅ ดึงข้อมูลเสร็จแล้ว!")
 
-    # แสดงตาราง
     st.dataframe(df)
 
-    # แสดงตัวอย่างรูปภาพ
     st.subheader("🔍 ตัวอย่างสินค้า")
     for product in all_products[:5]:
         image_path = os.path.join("images", product['Image File'])
         if os.path.exists(image_path):
             st.image(image_path, caption=product['Product Name'])
 
-    # ปุ่มดาวน์โหลด CSV
     csv = df.to_csv(index=False).encode('utf-8')
     st.download_button("📥 ดาวน์โหลด CSV", csv, "products.csv", "text/csv")
+
 
