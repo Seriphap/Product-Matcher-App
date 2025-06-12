@@ -6,8 +6,8 @@ import os
 import uuid
 from urllib.parse import urljoin
 
-st.title("🛠️ Product Scraper (hsc-spareparts.com)")
-st.write("ดึงข้อมูลสินค้า (ชื่อ + รูปภาพ) จากเว็บไซต์ hsc-spareparts.com")
+st.title("🛠️ Product Scraper")
+st.write("ดึงข้อมูลสินค้า (ชื่อ + รูปภาพ) จากเว็บไซต์")
 
 if st.button("เริ่มดึงข้อมูล"):
     headers = {'User-Agent': 'Mozilla/5.0'}
