@@ -61,46 +61,45 @@ if st.button("Start Scraping"):
         )
 
         # Excel with images
-        if st.button("Prepare Excel File [Product Name, Image URL and Image Preview]"):
-            output = BytesIO()
-            workbook = xlsxwriter.Workbook(output, {'in_memory': True})
-            worksheet = workbook.add_worksheet("Products")
-    
-            worksheet.write("A1", "Product Name")
-            worksheet.write("B1", "Image URL")
-            worksheet.write("C1", "Image")
-    
-            row = 1
-            for product in all_products:
-                worksheet.write(row, 0, product["name"])
-                worksheet.write(row, 1, product["image_url"])
-    
-                try:
-                    img_response = requests.get(product["image_url"], stream=True, timeout=10)
-                    if img_response.status_code == 200:
-                        img = Image.open(BytesIO(img_response.content))
-                        img.thumbnail((100, 100))
-                        img_byte_arr = BytesIO()
-                        img.save(img_byte_arr, format='PNG')
-                        worksheet.insert_image(row, 2, product["name"] + ".png", {
-                            'image_data': img_byte_arr,
-                            'x_scale': 1,
-                            'y_scale': 1
-                        })
-                except:
-                    pass
-    
-                row += 1
-    
-            workbook.close()
-            output.seek(0)
-            
-            st.download_button(
-                label="📥 Download Excel [Product Name, Image URL and Image Preview]",
-                data=output,
-                file_name="products_with_images.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
+        output = BytesIO()
+        workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+        worksheet = workbook.add_worksheet("Products")
+
+        worksheet.write("A1", "Product Name")
+        worksheet.write("B1", "Image URL")
+        worksheet.write("C1", "Image")
+
+        row = 1
+        for product in all_products:
+            worksheet.write(row, 0, product["name"])
+            worksheet.write(row, 1, product["image_url"])
+
+            try:
+                img_response = requests.get(product["image_url"], stream=True, timeout=10)
+                if img_response.status_code == 200:
+                    img = Image.open(BytesIO(img_response.content))
+                    img.thumbnail((100, 100))
+                    img_byte_arr = BytesIO()
+                    img.save(img_byte_arr, format='PNG')
+                    worksheet.insert_image(row, 2, product["name"] + ".png", {
+                        'image_data': img_byte_arr,
+                        'x_scale': 1,
+                        'y_scale': 1
+                    })
+            except:
+                pass
+
+            row += 1
+
+        workbook.close()
+        output.seek(0)
+        
+        st.download_button(
+            label="📥 Download Excel [Product Name, Image URL and Image Preview]",
+            data=output,
+            file_name="products_with_images.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
 
     except Exception as e:
         st.error(f"An error occurred: {e}")
