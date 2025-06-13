@@ -61,6 +61,7 @@ if st.button("Start Scraping"):
         )
 
         # Excel with images
+        st.button("Prepare Excel File [Product Name, Image URL, and Image Preview]")
         output = BytesIO()
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
         worksheet = workbook.add_worksheet("Products")
@@ -94,7 +95,6 @@ if st.button("Start Scraping"):
         workbook.close()
         output.seek(0)
         
-        st.button("Prepare Excel File [Product Name, Image URL, and Image Preview]")
         st.download_button(
             label="📥 Download Excel [Product Name, Image URL, and Image Preview]",
             data=output,
