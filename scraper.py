@@ -54,7 +54,7 @@ if st.button("Start Scraping"):
         df = pd.DataFrame(all_products)
         csv = df.to_csv(index=False).encode('utf-8')
         st.download_button(
-            label="📥 Download CSV",
+            label="📥 Download CSV [Product Name, Image URL]",
             data=csv,
             file_name='products_dataset.csv',
             mime='text/csv'
@@ -93,9 +93,10 @@ if st.button("Start Scraping"):
 
         workbook.close()
         output.seek(0)
-
+        
+        st.button("Prepare Excel File [Product Name, Image URL, and Image Preview]")
         st.download_button(
-            label="📥 Download Excel with Images",
+            label="📥 Download Excel [Product Name, Image URL, and Image Preview]",
             data=output,
             file_name="products_with_images.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
