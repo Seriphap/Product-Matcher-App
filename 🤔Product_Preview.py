@@ -72,25 +72,44 @@ if "all_products" in st.session_state and st.session_state.all_products:
         st.sidebar.download_button("Save CSV File", data=csv, file_name="products.csv", mime="text/csv")
 
     # 📥 Download Excel
-    if st.sidebar.button("📥 Download Excel"):
+    if st.button("📥 Download Excel with Images"):
         output = BytesIO()
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
         worksheet = workbook.add_worksheet("Products")
-
+    
+        # เขียนหัวตาราง
         worksheet.write("A1", "Product Name")
         worksheet.write("B1", "Image URL")
-
+        worksheet.write("C1", "Image")
+    
         row = 1
-        for product in filtered_products:
+        for product in products:
             worksheet.write(row, 0, product["name"])
             worksheet.write(row, 1, product["image_url"])
+    
+            try:
+                response = requests.get(product["image_url"])
+                if response.status_code == 200:
+                    img = Image.open(BytesIO(response.content))
+                    img.thumbnail((100, 100))
+                    img_byte_arr = BytesIO()
+                    img.save(img_byte_arr, format='PNG')
+                    worksheet.insert_image(row, 2, product["name"] + ".png", {
+                        'image_data': img_byte_arr,
+                        'x_scale': 1,
+                        'y_scale': 1
+                    })
+            except Exception as e:
+                st.warning(f"⚠️ Failed to load image for {product['name']}: {e}")
+    
             row += 1
-
         workbook.close()
         output.seek(0)
-        st.sidebar.download_button(
+    
+        st.download_button(
             label="Save Excel File",
             data=output,
-            file_name="products.xlsx",
+            file_name="products_with_images.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+
