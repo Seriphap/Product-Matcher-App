@@ -62,46 +62,14 @@ if st.session_state.all_products:
         if search_query.lower() in p["name"].lower()
     ] if search_query else st.session_state.all_products
 
-    # Scrollable image grid
-    with st.container():
-        st.markdown(
-            """
-            <style>
-            .scrollable-container {
-                height: 500px;
-                overflow-y: scroll;
-                border: 1px solid #ccc;
-                padding: 10px;
-            }
-            .product-grid {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-            .product-item {
-                width: 120px;
-                text-align: center;
-            }
-            .product-item img {
-                width: 100%;
-                height: auto;
-                border-radius: 5px;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
-
-        html_content = '<div class="scrollable-container"><div class="product-grid">'
-        for product in filtered_products:
-            html_content += f"""
-            <div class="product-item">
-                <img src="{product['image_url']}" alt="{product['name']}">
-                <div style="font-size: 12px;">{product['name']}</div>
-            </div>
-            """
-        html_content += '</div></div>'
-        st.markdown(html_content, unsafe_allow_html=True)
+    # ✅ แสดงภาพแบบ columns (5 คอลัมน์ต่อแถว)
+    st.markdown("### 🖼️ Product Gallery")
+    for i in range(0, len(filtered_products), 5):
+        cols = st.columns(5)
+        for j in range(5):
+            if i + j < len(filtered_products):
+                with cols[j]:
+                    st.image(filtered_products[i + j]["image_url"], caption=filtered_products[i + j]["name"], width=120)
 
     # CSV download
     df = pd.DataFrame(filtered_products)
@@ -157,7 +125,7 @@ if st.session_state.all_products:
     # Upload to MongoDB
     if st.button("Upload to MongoDB Atlas"):
         try:
-            client = MongoClient("mongodb+srv://seriphap1:seriphap1@cluster0.hnvlg44.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")  # Replace with your actual connection string
+            client = MongoClient("your_mongodb_connection_string")  # Replace with your actual connection string
             db = client["product_db"]
             collection = db["products"]
 
@@ -183,3 +151,4 @@ if st.session_state.all_products:
     if st.button("🧹 Clear Results"):
         st.session_state.all_products = []
         st.experimental_rerun()
+
