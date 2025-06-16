@@ -1,66 +1,86 @@
 import streamlit as st
-import requests
-from lxml import html
-from urllib.parse import urljoin
 import pandas as pd
+import requests
 from io import BytesIO
 from PIL import Image
 import xlsxwriter
+from pymongo import MongoClient
+from gridfs import GridFS
+from urllib.parse import quote_plus
+from rapidfuzz import fuzz
 
-st.title("🔍 Scrape All Products and Export")
+st.title("📦 Product Viewer from MongoDB Atlas")
 
-base_url = "https://hsc-spareparts.com/products/"
-headers = {'User-Agent': 'Mozilla/5.0'}
+# 🔐 MongoDB Login
+st.sidebar.markdown("### 🔐 MongoDB Login")
+username = st.sidebar.text_input("Username")
+password = st.sidebar.text_input("Password", type="password")
 
-def get_product_xpaths(index):
-    image_xpath = f'//*[@id="plist"]/div[3]/div[{index}]/div[1]/a/img'
-    name_xpath = f'//*[@id="plist"]/div[3]/div[{index}]/div[2]/a'
-    return image_xpath, name_xpath
-
-if st.button("Start Scraping"):
-    all_products = []
-
+# 🔄 Load data from MongoDB
+if username and password and st.sidebar.button("🔄 Load Products from MongoDB Atlas"):
     try:
-        for page in range(1, 40):  # Pages 1 to 39
-            url = f"{base_url}{page}.html"
-            response = requests.get(url, headers=headers)
-            response.raise_for_status()
-            tree = html.fromstring(response.content)
+        encoded_password = quote_plus(password)
+        mongo_uri = f"mongodb+srv://{username}:{encoded_password}@cluster0.hnvlg44.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+        client = MongoClient(mongo_uri)
+        db = client["productDB"]
+        collection = db["products"]
+        fs = GridFS(db)
 
-            for i in range(1, 21):  # Up to 20 products per page
-                image_xpath, name_xpath = get_product_xpaths(i)
-                image_element = tree.xpath(image_xpath)
-                name_element = tree.xpath(name_xpath)
+        products = []
+        for doc in collection.find():
+            products.append({
+                "name": doc.get("name", ""),
+                "image_url": doc.get("image_url", ""),
+                "image_file_id": doc.get("image_file_id", None)
+            })
 
-                if not image_element or not name_element:
-                    continue
+        st.session_state.all_products = products
+        st.success(f"✅ Loaded {len(products)} products from MongoDB Atlas")
 
-                image_url = urljoin(url, image_element[0].get('src'))
-                product_name = name_element[0].text_content().strip()
+    except Exception as e:
+        st.sidebar.error(f"❌ Failed to load data: {e}")
 
-                all_products.append({"name": product_name, "image_url": image_url})
+# 🔍 Search and Display
+if "all_products" in st.session_state and st.session_state.all_products:
+    st.markdown("### 🔎 Search Product Name")
+    search_query = st.text_input("Enter keyword to filter products")
+    fuzzy_option = st.checkbox("🔍 Enable Fuzzy Search (similar words)", value=False)
 
-        st.success(f"✅ Successfully scraped {len(all_products)} products")
+    if search_query:
+        if fuzzy_option:
+            filtered_products = [
+                p for p in st.session_state.all_products
+                if fuzz.partial_ratio(search_query.lower(), p["name"].lower()) > 70
+            ]
+        else:
+            filtered_products = [
+                p for p in st.session_state.all_products
+                if search_query.lower() in p["name"].lower()
+            ]
+    else:
+        filtered_products = st.session_state.all_products
 
-        # Display in 5 columns
-        for i in range(0, len(all_products), 5):
-            cols = st.columns(5)
-            for j in range(5):
-                if i + j < len(all_products):
-                    with cols[j]:
-                        st.image(all_products[i + j]["image_url"], caption=all_products[i + j]["name"], width=120)
+    # 🖼️ Product Gallery
+    st.markdown("### 🖼️ Product Gallery")
+    for i in range(0, len(filtered_products), 5):
+        cols = st.columns(5)
+        for j in range(5):
+            if i + j < len(filtered_products):
+                with cols[j]:
+                    try:
+                        image_data = fs.get(filtered_products[i + j]["image_file_id"]).read()
+                        image = Image.open(BytesIO(image_data))
+                        st.image(image, caption=filtered_products[i + j]["name"], width=120)
+                    except:
+                        st.image("https://via.placeholder.com/120", caption=filtered_products[i + j]["name"], width=120)
 
-        # CSV download
-        df = pd.DataFrame(all_products)
-        csv = df.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label="📥 Download CSV [Product Name, Image URL]",
-            data=csv,
-            file_name='products_dataset.csv',
-            mime='text/csv'
-        )
+    # 📥 Download CSV
+    if st.sidebar.button("📥 Download CSV"):
+        csv = pd.DataFrame(filtered_products).drop(columns=["image_file_id"]).to_csv(index=False).encode('utf-8')
+        st.sidebar.download_button("📥 Download CSV", data=csv, file_name="products.csv", mime="text/csv")
 
-        # Excel with images
+    # 📥 Download Excel
+    if st.sidebar.button("📥 Download Excel"):
         output = BytesIO()
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
         worksheet = workbook.add_worksheet("Products")
@@ -70,22 +90,21 @@ if st.button("Start Scraping"):
         worksheet.write("C1", "Image")
 
         row = 1
-        for product in all_products:
+        for product in filtered_products:
             worksheet.write(row, 0, product["name"])
             worksheet.write(row, 1, product["image_url"])
 
             try:
-                img_response = requests.get(product["image_url"], stream=True, timeout=10)
-                if img_response.status_code == 200:
-                    img = Image.open(BytesIO(img_response.content))
-                    img.thumbnail((100, 100))
-                    img_byte_arr = BytesIO()
-                    img.save(img_byte_arr, format='PNG')
-                    worksheet.insert_image(row, 2, product["name"] + ".png", {
-                        'image_data': img_byte_arr,
-                        'x_scale': 1,
-                        'y_scale': 1
-                    })
+                image_data = fs.get(product["image_file_id"]).read()
+                img = Image.open(BytesIO(image_data))
+                img.thumbnail((100, 100))
+                img_byte_arr = BytesIO()
+                img.save(img_byte_arr, format='PNG')
+                worksheet.insert_image(row, 2, product["name"] + ".png", {
+                    'image_data': img_byte_arr,
+                    'x_scale': 1,
+                    'y_scale': 1
+                })
             except:
                 pass
 
@@ -93,17 +112,12 @@ if st.button("Start Scraping"):
 
         workbook.close()
         output.seek(0)
-        
-        st.download_button(
-            label="📥 Download Excel [Product Name, Image URL and Image Preview]",
+        st.sidebar.download_button(
+            label="📥 Download Excel",
             data=output,
             file_name="products_with_images.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-
-    except Exception as e:
-        st.error(f"An error occurred: {e}")
-
 
 
 
