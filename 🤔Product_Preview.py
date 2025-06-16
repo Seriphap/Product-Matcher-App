@@ -68,9 +68,9 @@ if "all_products" in st.session_state and st.session_state.all_products:
                     #else:
                         #st.image("https://via.placeholder.com/120", caption=filtered_products[i + j]["name"], width=120)
         for j in range(5):
-        if i + j < len(filtered_products):
-            with cols[j]:
-                st.image(filtered_products[i + j]["image_url"], caption=filtered_products[i + j]["name"], width=120)
+            if i + j < len(filtered_products):
+                with cols[j]:
+                    st.image(filtered_products[i + j]["image_url"], caption=filtered_products[i + j]["name"], width=120)
 
 
     
