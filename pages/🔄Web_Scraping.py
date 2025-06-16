@@ -123,6 +123,33 @@ if st.session_state.all_products:
             file_name="products_with_images.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+    
+    st.sidebar.markdown("### 🔐 MongoDB Login")
+    mongo_user = st.sidebar.text_input("Username")
+    mongo_pass = st.sidebar.text_input("Password", type="password")
+    if st.sidebar.button("☁️ Upload to MongoDB"):
+        try:
+            client = MongoClient(f"mongodb+srv://{mongo_user}:{mongo_pass}@cluster0.hnvlg44.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")  # Replace with your actual connection string
+            db = client["product_db"]
+            collection = db["products"]
+
+            for product in filtered_products:
+                try:
+                    img_data = requests.get(product["image_url"]).content
+                    encoded_image = base64.b64encode(img_data).decode('utf-8')
+
+                    collection.insert_one({
+                        "name": product["name"],
+                        "image_url": product["image_url"],
+                        "image_base64": encoded_image
+                    })
+                except Exception as e:
+                    st.warning(f"⚠️ Failed to upload image for {product['name']}: {e}")
+
+            st.sidebar.success("✅ Uploaded to MongoDB!")
+
+        except Exception as e:
+            st.sidebar.error(f"❌ MongoDB Error: {e}")
 
     
 
