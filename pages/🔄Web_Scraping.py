@@ -127,9 +127,10 @@ if st.session_state.all_products:
     #st.sidebar.markdown("### 🔐 MongoDB Login")
     #mongo_user = st.sidebar.text_input("Username")
     #mongo_pass = st.sidebar.text_input("Password", type="password")
+    
     if st.sidebar.button("☁️ Upload to MongoDB"):
         try:
-            client = MongoClient(f"mongodb+srv://{mongo_user}:{mongo_pass}@cluster0.hnvlg44.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")  # Replace with your actual connection string
+            client = MongoClient("your_mongodb_connection_string")  # Replace with your actual connection string
             db = client["product_db"]
             collection = db["products"]
 
@@ -150,6 +151,7 @@ if st.session_state.all_products:
 
         except Exception as e:
             st.sidebar.error(f"❌ MongoDB Error: {e}")
+
 
     
 
