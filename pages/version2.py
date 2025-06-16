@@ -8,6 +8,7 @@ from PIL import Image
 import xlsxwriter
 import base64
 from pymongo import MongoClient
+from rapidfuzz import fuzz
 
 st.title("🔍 Scrape All Products and Export")
 
@@ -19,11 +20,9 @@ def get_product_xpaths(index):
     name_xpath = f'//*[@id="plist"]/div[3]/div[{index}]/div[2]/a'
     return image_xpath, name_xpath
 
-# Session state to persist scraped data
 if "all_products" not in st.session_state:
     st.session_state.all_products = []
 
-# Start Scraping
 if st.button("Start Scraping"):
     try:
         all_products = []
@@ -52,26 +51,26 @@ if st.button("Start Scraping"):
     except Exception as e:
         st.error(f"An error occurred: {e}")
 
-# Show search and display if data exists
 if st.session_state.all_products:
     st.markdown("### 🔎 Search Product Name")
     search_query = st.text_input("Enter keyword to filter products")
+    fuzzy_option = st.checkbox("🔍 Enable Fuzzy Search (similar words)", value=False)
 
-    filtered_products = [
-        p for p in st.session_state.all_products
-        if search_query.lower() in p["name"].lower()
-    ] if search_query else st.session_state.all_products
+    if search_query:
+        if fuzzy_option:
+            filtered_products = [
+                p for p in st.session_state.all_products
+                if fuzz.partial_ratio(search_query.lower(), p["name"].lower()) > 70
+            ]
+        else:
+            filtered_products = [
+                p for p in st.session_state.all_products
+                if search_query.lower() in p["name"].lower()
+            ]
+    else:
+        filtered_products = st.session_state.all_products
 
-    # ✅ แสดงภาพแบบ columns (5 คอลัมน์ต่อแถว)
-    st.markdown("### 🖼️ Product Gallery")
-    for i in range(0, len(filtered_products), 5):
-        cols = st.columns(5)
-        for j in range(5):
-            if i + j < len(filtered_products):
-                with cols[j]:
-                    st.image(filtered_products[i + j]["image_url"], caption=filtered_products[i + j]["name"], width=120)
-
-    # CSV download
+    # 📥 Buttons before image display
     df = pd.DataFrame(filtered_products)
     csv = df.to_csv(index=False).encode('utf-8')
     st.download_button(
@@ -81,7 +80,6 @@ if st.session_state.all_products:
         mime='text/csv'
     )
 
-    # Excel with images
     output = BytesIO()
     workbook = xlsxwriter.Workbook(output, {'in_memory': True})
     worksheet = workbook.add_worksheet("Products")
@@ -122,7 +120,6 @@ if st.session_state.all_products:
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
-    # Upload to MongoDB
     if st.button("Upload to MongoDB Atlas"):
         try:
             client = MongoClient("your_mongodb_connection_string")  # Replace with your actual connection string
@@ -147,8 +144,17 @@ if st.session_state.all_products:
         except Exception as e:
             st.error(f"❌ Failed to connect or upload to MongoDB: {e}")
 
-    # Clear results
     if st.button("🧹 Clear Results"):
         st.session_state.all_products = []
         st.experimental_rerun()
+
+    # 🖼️ Display images
+    st.markdown("### 🖼️ Product Gallery")
+    for i in range(0, len(filtered_products), 5):
+        cols = st.columns(5)
+        for j in range(5):
+            if i + j < len(filtered_products):
+                with cols[j]:
+                    st.image(filtered_products[i + j]["image_url"], caption=filtered_products[i + j]["name"], width=120)
+
 
