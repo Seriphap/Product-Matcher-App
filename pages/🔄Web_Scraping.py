@@ -131,8 +131,7 @@ password = st.sidebar.text_input("Password", type="password")
 if username and password and st.sidebar.button("☁️ Upload to MongoDB Atlas"):
     try:
         from gridfs import GridFS
-
-        mongo_uri = f"mongodb+srv://{username}:{password}@cluster0.mongodb.net/?retryWrites=true&w=majority"
+        mongo_uri = f"mongodb+srv://{username}:{password}@cluster0.hnvlg44.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
         client = MongoClient(mongo_uri)
         db = client["productDB"]
         collection = db["products"]
