@@ -124,30 +124,30 @@ if st.session_state.all_products:
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
         
-        # Upload to MongoDB
-        if st.button("Upload to MongoDB Atlas"):
-            try:
-                client = MongoClient("your_mongodb_connection_string")  # Replace with your actual connection string
-                db = client["product_db"]
-                collection = db["products"]
-    
-                for product in filtered_products:
-                    try:
-                        img_data = requests.get(product["image_url"]).content
-                        encoded_image = base64.b64encode(img_data).decode('utf-8')
-    
-                        collection.insert_one({
-                            "name": product["name"],
-                            "image_url": product["image_url"],
-                            "image_base64": encoded_image
-                        })
-                    except Exception as e:
-                        st.warning(f"⚠️ Failed to upload image for {product['name']}: {e}")
-    
-                st.success("✅ All products uploaded to MongoDB Atlas!")
-    
-            except Exception as e:
-                st.error(f"❌ Failed to connect or upload to MongoDB: {e}")
+    # Upload to MongoDB
+    if st.button("Upload to MongoDB Atlas"):
+        try:
+            client = MongoClient("your_mongodb_connection_string")  # Replace with your actual connection string
+            db = client["product_db"]
+            collection = db["products"]
+
+            for product in filtered_products:
+                try:
+                    img_data = requests.get(product["image_url"]).content
+                    encoded_image = base64.b64encode(img_data).decode('utf-8')
+
+                    collection.insert_one({
+                        "name": product["name"],
+                        "image_url": product["image_url"],
+                        "image_base64": encoded_image
+                    })
+                except Exception as e:
+                    st.warning(f"⚠️ Failed to upload image for {product['name']}: {e}")
+
+            st.success("✅ All products uploaded to MongoDB Atlas!")
+
+        except Exception as e:
+            st.error(f"❌ Failed to connect or upload to MongoDB: {e}")
 
 
 
