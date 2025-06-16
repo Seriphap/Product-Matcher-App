@@ -1,16 +1,12 @@
 import streamlit as st
 import pandas as pd
-import requests
-from io import BytesIO
-from PIL import Image
-import xlsxwriter
 from pymongo import MongoClient
-from gridfs import GridFS
 from urllib.parse import quote_plus
 from rapidfuzz import fuzz
+import xlsxwriter
+from io import BytesIO
 
-st.title("📦 Product Viewer")
-
+st.title("📦 Product Viewer (Image URL Version)")
 
 username = "sssseriphap"
 password = "ieTSQt7QOin0oxNQ"
@@ -23,14 +19,12 @@ if username and password and st.sidebar.button("🔄 Load Products from MongoDB 
         client = MongoClient(mongo_uri)
         db = client["productDB"]
         collection = db["products"]
-        fs = GridFS(db)
 
         products = []
         for doc in collection.find():
             products.append({
                 "name": doc.get("name", ""),
-                "image_url": doc.get("image_url", ""),
-                "image_file_id": doc.get("image_file_id", None)
+                "image_url": doc.get("image_url", "")
             })
 
         st.session_state.all_products = products
@@ -66,16 +60,15 @@ if "all_products" in st.session_state and st.session_state.all_products:
         for j in range(5):
             if i + j < len(filtered_products):
                 with cols[j]:
-                    try:
-                        image_data = fs.get(filtered_products[i + j]["image_file_id"]).read()
-                        image = Image.open(BytesIO(image_data))
-                        st.image(image, caption=filtered_products[i + j]["name"], width=120)
-                    except:
+                    image_url = filtered_products[i + j]["image_url"]
+                    if image_url:
+                        st.image(image_url, caption=filtered_products[i + j]["name"], width=120)
+                    else:
                         st.image("https://via.placeholder.com/120", caption=filtered_products[i + j]["name"], width=120)
 
     # 📥 Download CSV
     if st.sidebar.button("📥 Download CSV"):
-        csv = pd.DataFrame(filtered_products).drop(columns=["image_file_id"]).to_csv(index=False).encode('utf-8')
+        csv = pd.DataFrame(filtered_products).to_csv(index=False).encode('utf-8')
         st.sidebar.download_button("📥 Download CSV", data=csv, file_name="products.csv", mime="text/csv")
 
     # 📥 Download Excel
@@ -86,27 +79,11 @@ if "all_products" in st.session_state and st.session_state.all_products:
 
         worksheet.write("A1", "Product Name")
         worksheet.write("B1", "Image URL")
-        worksheet.write("C1", "Image")
 
         row = 1
         for product in filtered_products:
             worksheet.write(row, 0, product["name"])
             worksheet.write(row, 1, product["image_url"])
-
-            try:
-                image_data = fs.get(product["image_file_id"]).read()
-                img = Image.open(BytesIO(image_data))
-                img.thumbnail((100, 100))
-                img_byte_arr = BytesIO()
-                img.save(img_byte_arr, format='PNG')
-                worksheet.insert_image(row, 2, product["name"] + ".png", {
-                    'image_data': img_byte_arr,
-                    'x_scale': 1,
-                    'y_scale': 1
-                })
-            except:
-                pass
-
             row += 1
 
         workbook.close()
@@ -114,13 +91,6 @@ if "all_products" in st.session_state and st.session_state.all_products:
         st.sidebar.download_button(
             label="📥 Download Excel",
             data=output,
-            file_name="products_with_images.xlsx",
+            file_name="products.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-
-
-
-
-
-
-
