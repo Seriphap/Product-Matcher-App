@@ -23,7 +23,7 @@ def get_product_xpaths(index):
 if "all_products" not in st.session_state:
     st.session_state.all_products = []
 
-if st.button("Start Scraping"):
+if st.sidebar.button("🚀 Start Scraping"):
     try:
         all_products = []
         for page in range(1, 40):
@@ -70,11 +70,11 @@ if st.session_state.all_products:
     else:
         filtered_products = st.session_state.all_products
 
-    # 📥 Buttons before image display
+    # 📥 Sidebar buttons
     df = pd.DataFrame(filtered_products)
     csv = df.to_csv(index=False).encode('utf-8')
-    st.download_button(
-        label="📥 Download CSV [Product Name, Image URL]",
+    st.sidebar.download_button(
+        label="📥 Download CSV",
         data=csv,
         file_name='products_dataset.csv',
         mime='text/csv'
@@ -113,14 +113,14 @@ if st.session_state.all_products:
     workbook.close()
     output.seek(0)
 
-    st.download_button(
-        label="📥 Download Excel [Product Name, Image URL and Image Preview]",
+    st.sidebar.download_button(
+        label="📥 Download Excel",
         data=output,
         file_name="products_with_images.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
-    if st.button("Upload to MongoDB Atlas"):
+    if st.sidebar.button("☁️ Upload to MongoDB"):
         try:
             client = MongoClient("your_mongodb_connection_string")  # Replace with your actual connection string
             db = client["product_db"]
@@ -139,14 +139,10 @@ if st.session_state.all_products:
                 except Exception as e:
                     st.warning(f"⚠️ Failed to upload image for {product['name']}: {e}")
 
-            st.success("✅ All products uploaded to MongoDB Atlas!")
+            st.sidebar.success("✅ Uploaded to MongoDB!")
 
         except Exception as e:
-            st.error(f"❌ Failed to connect or upload to MongoDB: {e}")
-
-    if st.button("🧹 Clear Results"):
-        st.session_state.all_products = []
-        st.experimental_rerun()
+            st.sidebar.error(f"❌ MongoDB Error: {e}")
 
     # 🖼️ Display images
     st.markdown("### 🖼️ Product Gallery")
@@ -156,5 +152,6 @@ if st.session_state.all_products:
             if i + j < len(filtered_products):
                 with cols[j]:
                     st.image(filtered_products[i + j]["image_url"], caption=filtered_products[i + j]["name"], width=120)
+
 
 
