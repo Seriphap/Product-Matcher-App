@@ -9,12 +9,11 @@ from gridfs import GridFS
 from urllib.parse import quote_plus
 from rapidfuzz import fuzz
 
-st.title("📦 Product Viewer from MongoDB Atlas")
+st.title("📦 Product Viewer")
 
-# 🔐 MongoDB Login
-st.sidebar.markdown("### 🔐 MongoDB Login")
-username = st.sidebar.text_input("Username")
-password = st.sidebar.text_input("Password", type="password")
+
+username = "sssseriphap"
+password = "ieTSQt7QOin0oxNQ"
 
 # 🔄 Load data from MongoDB
 if username and password and st.sidebar.button("🔄 Load Products from MongoDB Atlas"):
