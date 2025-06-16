@@ -157,7 +157,7 @@ if st.session_state.all_products:
     # Upload to MongoDB
     if st.button("Upload to MongoDB Atlas"):
         try:
-            client = MongoClient("your_mongodb_connection_string")  # Replace with your actual connection string
+            client = MongoClient("mongodb+srv://seriphap1:seriphap1@cluster0.hnvlg44.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")  # Replace with your actual connection string
             db = client["product_db"]
             collection = db["products"]
 
