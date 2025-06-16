@@ -87,7 +87,7 @@ if "all_products" in st.session_state and st.session_state.all_products:
             worksheet.write(row, 0, product["name"])
             worksheet.write(row, 1, product["image_url"])
     
-           try:
+            try:
                 img_response = requests.get(product["image_url"], stream=True, timeout=10)
                 if img_response.status_code == 200:
                     img = Image.open(BytesIO(img_response.content))
