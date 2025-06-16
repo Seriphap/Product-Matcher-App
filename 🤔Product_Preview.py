@@ -5,6 +5,8 @@ from urllib.parse import quote_plus
 from rapidfuzz import fuzz
 import xlsxwriter
 from io import BytesIO
+from PIL import Image
+
 
 st.title("📦 Product Viewer (Image URL Version)")
 
