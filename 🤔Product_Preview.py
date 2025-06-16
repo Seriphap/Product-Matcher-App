@@ -83,7 +83,7 @@ if "all_products" in st.session_state and st.session_state.all_products:
         worksheet.write("C1", "Image")
     
         row = 1
-        for product in products:
+        for product in filtered_products:
             worksheet.write(row, 0, product["name"])
             worksheet.write(row, 1, product["image_url"])
     
@@ -106,7 +106,7 @@ if "all_products" in st.session_state and st.session_state.all_products:
         workbook.close()
         output.seek(0)
     
-        st.download_button(
+        st.sidebar.download_button(
             label="Save Excel File",
             data=output,
             file_name="products_with_images.xlsx",
