@@ -7,3 +7,5 @@ Pillow
 xlsxwriter
 pymongo
 rapidfuzz
+pymongo[srv]
+dnspython
