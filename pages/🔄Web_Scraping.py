@@ -134,8 +134,6 @@ if st.session_state.all_products:
             st.sidebar.warning("Please enter both username and password.")
         else:
             try:
-                mongo_uri = f"mongodb+srv://{mongo_user}:{mongo_pass}@cluster0.hnvlg44.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-                client = MongoClient(mongo_uri)
                 db = client["product_db"]
                 collection = db["products"]
     
