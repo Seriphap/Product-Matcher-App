@@ -82,7 +82,7 @@ if st.session_state.all_products:
     # 📥 ปุ่มใน Sidebar (ทำงานเมื่อกดเท่านั้น)
     if st.sidebar.button("📥 Download CSV"):
         csv = pd.DataFrame(filtered_products).to_csv(index=False).encode('utf-8')
-        st.sidebar.download_button("📥 Download CSV", data=csv, file_name="products.csv", mime="text/csv")
+        st.sidebar.download_button("Save CSV File", data=csv, file_name="products.csv", mime="text/csv")
 
     if st.sidebar.button("📥 Download Excel"):
         output = BytesIO()
@@ -118,7 +118,7 @@ if st.session_state.all_products:
         workbook.close()
         output.seek(0)
         st.sidebar.download_button(
-            label="📥 Download Excel",
+            label="Save Excel File",
             data=output,
             file_name="products_with_images.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
