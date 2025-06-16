@@ -127,7 +127,7 @@ if st.session_state.all_products:
     st.sidebar.markdown("### 🔐 MongoDB Login")
     mongo_user = st.sidebar.text_input("Username")
     mongo_pass = st.sidebar.text_input("Password", type="password")
-
+'''
     if st.sidebar.button("☁️ Upload to MongoDB"):
         if not mongo_user or not mongo_pass:
                 st.sidebar.warning("Please enter both username and password.")
@@ -155,7 +155,7 @@ if st.session_state.all_products:
         
                 except Exception as e:
                     st.sidebar.error(f"❌ MongoDB Error: {e}")
-
+'''
 
 
 
