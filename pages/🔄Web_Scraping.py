@@ -123,7 +123,42 @@ if st.session_state.all_products:
             file_name="products_with_images.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-        
+
+st.sidebar.markdown("### 🔐 MongoDB Login")
+username = st.sidebar.text_input("Username")
+password = st.sidebar.text_input("Password", type="password")
+
+if username and password and st.sidebar.button("☁️ Upload to MongoDB Atlas"):
+    try:
+        from gridfs import GridFS
+
+        mongo_uri = f"mongodb+srv://{username}:{password}@cluster0.mongodb.net/?retryWrites=true&w=majority"
+        client = MongoClient(mongo_uri)
+        db = client["productDB"]
+        collection = db["products"]
+        fs = GridFS(db)
+
+        # ล้างข้อมูลเก่า
+        collection.delete_many({})
+        db.fs.files.delete_many({})
+        db.fs.chunks.delete_many({})
+
+        for product in st.session_state.all_products:
+            img_response = requests.get(product["image_url"], stream=True, timeout=10)
+            if img_response.status_code == 200:
+                img_bytes = BytesIO(img_response.content)
+                image_id = fs.put(img_bytes, filename=product["name"] + ".png")
+
+                collection.insert_one({
+                    "name": product["name"],
+                    "image_url": product["image_url"],
+                    "image_file_id": image_id
+                })
+
+        st.sidebar.success("✅ Uploaded products and images to MongoDB Atlas")
+
+    except Exception as e:
+        st.sidebar.error(f"❌ Upload failed: {e}")
   
 
 
