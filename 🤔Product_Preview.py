@@ -59,15 +59,21 @@ if "all_products" in st.session_state and st.session_state.all_products:
     st.markdown("### 🖼️ Product Gallery")
     for i in range(0, len(filtered_products), 5):
         cols = st.columns(5)
+        #for j in range(5):
+            #if i + j < len(filtered_products):
+                #with cols[j]:
+                    #image_url = filtered_products[i + j]["image_url"]
+                    #if image_url:
+                        #st.image(image_url, caption=filtered_products[i + j]["name"], width=120)
+                    #else:
+                        #st.image("https://via.placeholder.com/120", caption=filtered_products[i + j]["name"], width=120)
         for j in range(5):
-            if i + j < len(filtered_products):
-                with cols[j]:
-                    image_url = filtered_products[i + j]["image_url"]
-                    if image_url:
-                        st.image(image_url, caption=filtered_products[i + j]["name"], width=120)
-                    else:
-                        st.image("https://via.placeholder.com/120", caption=filtered_products[i + j]["name"], width=120)
+        if i + j < len(filtered_products):
+            with cols[j]:
+                st.image(filtered_products[i + j]["image_url"], caption=filtered_products[i + j]["name"], width=120)
 
+
+    
     # 📥 Download CSV
     if st.sidebar.button("📥 Download CSV"):
         csv = pd.DataFrame(filtered_products).to_csv(index=False).encode('utf-8')
