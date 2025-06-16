@@ -109,7 +109,7 @@ if "all_products" in st.session_state and st.session_state.all_products:
         st.sidebar.download_button(
             label="Save Excel File",
             data=output,
-            file_name="products_with_images.xlsx",
+            file_name="products.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
