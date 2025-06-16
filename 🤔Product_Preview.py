@@ -72,7 +72,7 @@ if "all_products" in st.session_state and st.session_state.all_products:
         st.sidebar.download_button("Save CSV File", data=csv, file_name="products.csv", mime="text/csv")
 
     # 📥 Download Excel
-    if st.button("📥 Download Excel"):
+    if st.sidebar.button("📥 Download Excel"):
         output = BytesIO()
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
         worksheet = workbook.add_worksheet("Products")
