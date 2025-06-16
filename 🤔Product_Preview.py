@@ -69,7 +69,7 @@ if "all_products" in st.session_state and st.session_state.all_products:
     # 📥 Download CSV
     if st.sidebar.button("📥 Download CSV"):
         csv = pd.DataFrame(filtered_products).to_csv(index=False).encode('utf-8')
-        st.sidebar.download_button("📥 Download CSV", data=csv, file_name="products.csv", mime="text/csv")
+        st.sidebar.download_button("Save CSV File", data=csv, file_name="products.csv", mime="text/csv")
 
     # 📥 Download Excel
     if st.sidebar.button("📥 Download Excel"):
@@ -89,7 +89,7 @@ if "all_products" in st.session_state and st.session_state.all_products:
         workbook.close()
         output.seek(0)
         st.sidebar.download_button(
-            label="📥 Download Excel",
+            label="Save Excel File",
             data=output,
             file_name="products.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
