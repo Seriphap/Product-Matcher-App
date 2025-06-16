@@ -87,10 +87,10 @@ if "all_products" in st.session_state and st.session_state.all_products:
             worksheet.write(row, 0, product["name"])
             worksheet.write(row, 1, product["image_url"])
     
-            try:
-                response = requests.get(product["image_url"])
-                if response.status_code == 200:
-                    img = Image.open(BytesIO(response.content))
+           try:
+                img_response = requests.get(product["image_url"], stream=True, timeout=10)
+                if img_response.status_code == 200:
+                    img = Image.open(BytesIO(img_response.content))
                     img.thumbnail((100, 100))
                     img_byte_arr = BytesIO()
                     img.save(img_byte_arr, format='PNG')
@@ -99,10 +99,10 @@ if "all_products" in st.session_state and st.session_state.all_products:
                         'x_scale': 1,
                         'y_scale': 1
                     })
-            except Exception as e:
-                st.warning(f"⚠️ Failed to load image for {product['name']}: {e}")
-    
+            except:
+                pass
             row += 1
+        
         workbook.close()
         output.seek(0)
     
