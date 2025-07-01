@@ -17,8 +17,8 @@ headers = {'User-Agent': 'Mozilla/5.0'}
 def get_product_xpaths(index):
     #image_xpath = f'//*[@id="plist"]/div[3]/div[{index}]/div[1]/a/img'
     #name_xpath = f'//*[@id="plist"]/div[3]/div[{index}]/div[2]/a'
-    image_xpath = f'//*[@id="8919138061"]/div/div/div/div/div[{index}]/div/div[1]/a/div/img'
-    name_xpath = f'//*[@id="8919138061"]/div/div/div/div/div[{index}]/div/div[1]/div[1]'
+    image_xpath = f'//*[@id="8919138061"]/div/div/div/div/div[2]/div/div[{index}]/a/div/img'
+    name_xpath = f'//*[@id="8919138061"]/div/div/div/div/div[2]/div/div[{index}]/div[1]'
     return image_xpath, name_xpath
 
 if "all_products" not in st.session_state:
@@ -73,9 +73,9 @@ if st.session_state.all_products:
 
     # 🖼️ แสดงภาพทันที
     st.markdown("### 🖼️ Product Gallery")
-    for i in range(0, len(filtered_products), 5):
-        cols = st.columns(5)
-        for j in range(5):
+    for i in range(0, len(filtered_products), 4):
+        cols = st.columns(4)
+        for j in range(4):
             if i + j < len(filtered_products):
                 with cols[j]:
                     st.image(filtered_products[i + j]["image_url"], caption=filtered_products[i + j]["name"], width=120)
