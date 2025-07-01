@@ -28,27 +28,26 @@ if st.sidebar.button("🚀 Start Scraping"):
     try:
         all_products = []
         for page in range(int(FormPage), int(ToPage)+1):
-            
-            time.sleep(random.uniform(2.5, 4.5))
             url = f"{base_url}{page}.html?filter=null&sortType=modified-desc&isGallery=N"
             response = requests.get(url, headers=headers)
             response.raise_for_status()
             time.sleep(random.uniform(2.5, 4.5))
+            
             tree = html.fromstring(response.content)
-
-            for i in range(1, 17):
-                product_xpath = f'//*[@id="8919138061"]/div/div/div/div/div[2]'
-                image_element = tree.xpath(image_xpath)
-                name_element = tree.xpath(name_xpath) 
+            product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div/div'
+            product_elements = tree.xpath(product_xpath)
+            
+            for product in product_elements:
+                image_element = product.xpath('.//a/div/img/@src')
+                name_element = product.xpath('.//div[1]//text()')     
                 if not image_element or not name_element:
                     continue
-
-                image_url = urljoin(url, image_element[0].get('src'))
-                product_name = name_element[0].text_content().strip()
-
+                image_url = urljoin(url, image_element[0])
+                product_name = ''.join(name_element).strip()
                 all_products.append({"name": product_name, "image_url": image_url})
-            
+                
             time.sleep(random.uniform(2.5, 4.5))
+            
         st.session_state.all_products = all_products
         st.success(f"✅ Successfully scraped {len(all_products)} products")
 
