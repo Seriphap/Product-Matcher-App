@@ -73,30 +73,44 @@ if st.sidebar.button("🚀 Start Scraping"):
                 name_xpath = './/div[1]//text()'
 
             elif selected_category == "Blow Molding Machines":
-                product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div'
-                image_xpath = './/div[1]/div[1]/a/img/@src'
-                name_xpath = './/div[1]/div[1]/div[1]/text()'
-     
+                product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div'
+                image_xpath = './/div[1]/div[1]/a/img/@src'
+                name_xpath = './/div[1]/div[1]/div[1]/text()'
+
             elif selected_category == "Filler Capper Machines":
-                pass
+                product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div'
+                image_xpath = './/div[1]/div[1]/a/img/@src'
+                name_xpath = './/div[1]/div[1]/div[1]/text()'
                 
             elif selected_category == "Labeler Rinsing Machines":
-                pass
+                product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div'
+                image_xpath = './/div[1]/div[1]/a/img/@src'
+                name_xpath = './/div[1]/div[1]/div[1]/text()'                
                 
             elif selected_category == "Bottle Washer Machines":
-                pass
+                product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div'
+                image_xpath = './/div[1]/div[1]/a/img/@src'
+                name_xpath = './/div[1]/div[1]/div[1]/text()'
                 
             elif selected_category == "Wrapping Machines":
-                pass
+                product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div'
+                image_xpath = './/div[1]/div[1]/a/img/@src'
+                name_xpath = './/div[1]/div[1]/div[1]/text()'
                
             elif selected_category == "Packer Unpacker":
-                pass
+                product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div'
+                image_xpath = './/div[1]/div[1]/a/img/@src'
+                name_xpath = './/div[1]/div[1]/div[1]/text()'
                 
             elif selected_category == "PET Water Bottle Spare Parts":
-                pass
+                product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div'
+                image_xpath = './/div[1]/div[1]/a/img/@src'
+                name_xpath = './/div[1]/div[1]/div[1]/text()'
                 
             elif selected_category == "HSC Spare Parts":
-                pass
+                product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div'
+                image_xpath = './/div[1]/div[1]/a/img/@src'
+                name_xpath = './/div[1]/div[1]/div[1]/text()'
                
             else:
                 product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div/div'
@@ -129,6 +143,7 @@ if st.session_state.all_products:
             filtered_products = [
                 p for p in st.session_state.all_products
                 if fuzz.partial_ratio(search_query.lower(), p["name"].lower()) > 70
+
             ]
         else:
             filtered_products = [
