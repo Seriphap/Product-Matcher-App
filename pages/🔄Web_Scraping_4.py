@@ -117,8 +117,8 @@ if st.sidebar.button("🚀 Start Scraping"):
             
             product_elements = tree.xpath(product_xpath)
             for product in product_elements:
-                image_element = product.xpath(image_xpath)
-                name_element = product.xpath(name_xpath)
+                image_element = product.xpath(f'{image_xpath}')
+                name_element = product.xpath(f'{name_xpath}')
                 if not image_element or not name_element:
                     continue
                 image_url = urljoin(url, image_element[0])
