@@ -29,7 +29,7 @@ ToPage = st.sidebar.text_input("To Page")
 if st.sidebar.button("🚀 Start Scraping"):
     try:
         all_products = []
-        for page in range(FormPage, ToPage+1):
+        for page in range(int(FormPage), int(ToPage)+1):
             url = f"{base_url}{page}.html?filter=null&sortType=modified-desc&isGallery=N"
             response = requests.get(url, headers=headers)
             response.raise_for_status()
