@@ -78,24 +78,30 @@ if st.sidebar.button("🚀 Start Scraping"):
                 name_xpath = './/div[1]/div[1]/div[1]/text()'
      
             elif selected_category == "Filler Capper Machines":
+                pass
                 
             elif selected_category == "Labeler Rinsing Machines":
+                pass
                 
             elif selected_category == "Bottle Washer Machines":
+                pass
                 
             elif selected_category == "Wrapping Machines":
+                pass
                
             elif selected_category == "Packer Unpacker":
+                pass
                 
             elif selected_category == "PET Water Bottle Spare Parts":
+                pass
                 
             elif selected_category == "HSC Spare Parts":
+                pass
                
             else:
                 product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div/div'
             
             product_elements = tree.xpath(product_xpath)
-
             for product in product_elements:
                 image_element = product.xpath(image_xpath)
                 name_element = product.xpath(name_xpath)
