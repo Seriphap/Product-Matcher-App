@@ -73,10 +73,10 @@ if st.sidebar.button("🚀 Start Scraping"):
                 name_xpath = './/div[1]//text()'
 
             elif selected_category == "Blow Molding Machines":
-                product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]'
-                image_xpath = './/div/div[1]/div[1]/a/div/div[1]/div/div'
-                name_xpath =  './/div/div[1]/div[1]/div[1]'
-                
+                product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div'
+                image_xpath = './/div[1]/div[1]/a/img/@src'
+                name_xpath = './/div[1]/div[1]/div[1]/text()'
+     
             elif selected_category == "Filler Capper Machines":
                 
             elif selected_category == "Labeler Rinsing Machines":
