@@ -34,7 +34,7 @@ if st.sidebar.button("🚀 Start Scraping"):
             response.raise_for_status()
             tree = html.fromstring(response.content)
 
-            for Nrow in range(1, 5):
+            for i_row in range(1, 5):
                 for i in range(1, 5):
                     image_xpath, name_xpath = get_product_xpaths(i, i_row)
                     image_element = tree.xpath(image_xpath)
