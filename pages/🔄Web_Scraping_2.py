@@ -23,12 +23,12 @@ def get_product_xpaths(index):
 
 if "all_products" not in st.session_state:
     st.session_state.all_products = []
-
+    
+FormPage = st.text_input("From Page")
+ToPage = st.text_input("To Page")
 if st.sidebar.button("🚀 Start Scraping"):
     try:
         all_products = []
-        FormPage = st.text_input("From Page")
-        ToPage = st.text_input("To Page")
         for page in range(FormPage, ToPage+1):
             url = f"{base_url}{page}.html?filter=null&sortType=modified-desc&isGallery=N"
             response = requests.get(url, headers=headers)
