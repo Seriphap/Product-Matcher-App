@@ -28,7 +28,7 @@ if "all_products" not in st.session_state:
 if st.sidebar.button("🚀 Start Scraping"):
     try:
         all_products = []
-        for page in range(4, 33):
+        for page in range(1, 33):
             url = f"{base_url}{page}.html?filter=all&sortType=modified-desc&spm=a2700.shop_pl.41413.dbtmnavgo"
                                   
             response = requests.get(url, headers=headers)
@@ -48,6 +48,7 @@ if st.sidebar.button("🚀 Start Scraping"):
                     product_name = name_element[0].text_content().strip()
     
                     all_products.append({"name": product_name, "image_url": image_url})
+            time.sleep(5)
 
         st.session_state.all_products = all_products
         st.success(f"✅ Successfully scraped {len(all_products)} products")
