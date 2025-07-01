@@ -12,12 +12,14 @@ from rapidfuzz import fuzz
 
 st.title("🔍 Scrape All Products and Export")
 
-base_url = "https://hsc-spareparts.com/products/"
+base_url = "https://fslidingfeng.en.alibaba.com/productlist-"
 headers = {'User-Agent': 'Mozilla/5.0'}
 
-def get_product_xpaths(index):
-    image_xpath = f'//*[@id="plist"]/div[3]/div[{index}]/div[1]/a/img'
-    name_xpath = f'//*[@id="plist"]/div[3]/div[{index}]/div[2]/a'
+def get_product_xpaths(index, Nrow):
+    #image_xpath = f'//*[@id="plist"]/div[3]/div[{index}]/div[1]/a/img'
+    #name_xpath = f'//*[@id="plist"]/div[3]/div[{index}]/div[2]/a'
+    image_xpath = f'//*[@id="8919138061"]/div/div/div/div/div[2]/div/div[{Nrow}]/div[{index}]/a/div/img'
+    name_xpath = f'//*[@id="8919138061"]/div/div/div/div/div[2]/div/div[{Nrow}]/div[{index}]/div[1]'
     return image_xpath, name_xpath
 
 if "all_products" not in st.session_state:
@@ -26,24 +28,25 @@ if "all_products" not in st.session_state:
 if st.sidebar.button("🚀 Start Scraping"):
     try:
         all_products = []
-        for page in range(1, 40):
-            url = f"{base_url}{page}.html"
+        for page in range(1, 32):
+            url = f"{base_url}{page}.html?filter=all&sortType=modified-desc&spm=a2700.shop_pl.41413.dbtmnavgo"
             response = requests.get(url, headers=headers)
             response.raise_for_status()
             tree = html.fromstring(response.content)
 
-            for i in range(1, 21):
-                image_xpath, name_xpath = get_product_xpaths(i)
-                image_element = tree.xpath(image_xpath)
-                name_element = tree.xpath(name_xpath)
-
-                if not image_element or not name_element:
-                    continue
-
-                image_url = urljoin(url, image_element[0].get('src'))
-                product_name = name_element[0].text_content().strip()
-
-                all_products.append({"name": product_name, "image_url": image_url})
+            for Nrow in range(1, 5):  
+                for i in range(1, 5):
+                    image_xpath, name_xpath = get_product_xpaths(i, Nrow)
+                    image_element = tree.xpath(image_xpath)
+                    name_element = tree.xpath(name_xpath)
+    
+                    if not image_element or not name_element:
+                        continue
+    
+                    image_url = urljoin(url, image_element[0].get('src'))
+                    product_name = name_element[0].text_content().strip()
+    
+                    all_products.append({"name": product_name, "image_url": image_url})
 
         st.session_state.all_products = all_products
         st.success(f"✅ Successfully scraped {len(all_products)} products")
@@ -60,7 +63,7 @@ if st.session_state.all_products:
         if fuzzy_option:
             filtered_products = [
                 p for p in st.session_state.all_products
-                if fuzz.partial_ratio(search_query.lower(), p["name"].lower()) > 70
+                if fuzz.partial_ratio(search_query.lower(), p["name"].lower()) > 70                
             ]
         else:
             filtered_products = [
