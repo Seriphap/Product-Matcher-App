@@ -9,6 +9,9 @@ import xlsxwriter
 import base64
 from pymongo import MongoClient
 from rapidfuzz import fuzz
+import time
+import random
+
 
 st.title("🔍 Scrape All Products and Export")
 
@@ -48,6 +51,9 @@ if st.sidebar.button("🚀 Start Scraping"):
                     product_name = name_element[0].text_content().strip()
     
                     all_products.append({"name": product_name, "image_url": image_url})
+                    
+            st.write(f"🔄 Scraping page {page}... found {len(all_products)} products so far.")
+            time.sleep(random.uniform(2.5, 4.5))
 
         st.session_state.all_products = all_products
         st.success(f"✅ Successfully scraped {len(all_products)} products")
@@ -64,7 +70,7 @@ if st.session_state.all_products:
         if fuzzy_option:
             filtered_products = [
                 p for p in st.session_state.all_products
-                if fuzz.partial_ratio(search_query.lower(), p["name"].lower()) > 70                
+                if fuzz.partial_ratio(search_query.lower(), p["name"].lower()) > 70
             ]
         else:
             filtered_products = [
