@@ -9,6 +9,10 @@ import xlsxwriter
 import base64
 from pymongo import MongoClient
 from rapidfuzz import fuzz
+import time
+import random
+
+
 
 st.title("🔍 Scrape All Products and Export")
 base_url = "https://fslidingfeng.en.alibaba.com/productlist-"
@@ -19,6 +23,7 @@ def get_product_xpaths(index):
     #name_xpath = f'//*[@id="plist"]/div[3]/div[{index}]/div[2]/a'
     image_xpath = f'//*[@id="8919138061"]/div/div/div/div/div[2]/div/div[{index}]/a/div/img'
     name_xpath = f'//*[@id="8919138061"]/div/div/div/div/div[2]/div/div[{index}]/div[1]'
+
     return image_xpath, name_xpath
 
 if "all_products" not in st.session_state:
@@ -33,13 +38,13 @@ if st.sidebar.button("🚀 Start Scraping"):
             url = f"{base_url}{page}.html?filter=null&sortType=modified-desc&isGallery=N"
             response = requests.get(url, headers=headers)
             response.raise_for_status()
+            time.sleep(random.uniform(2.5, 4.5))
             tree = html.fromstring(response.content)
 
             for i in range(1, 17):
                 image_xpath, name_xpath = get_product_xpaths(i)
                 image_element = tree.xpath(image_xpath)
-                name_element = tree.xpath(name_xpath)
-
+                name_element = tree.xpath(name_xpath) 
                 if not image_element or not name_element:
                     continue
 
@@ -47,6 +52,9 @@ if st.sidebar.button("🚀 Start Scraping"):
                 product_name = name_element[0].text_content().strip()
 
                 all_products.append({"name": product_name, "image_url": image_url})
+            
+            if page % 3 == 0:
+                time.sleep(random.uniform(5, 8))
 
         st.session_state.all_products = all_products
         st.success(f"✅ Successfully scraped {len(all_products)} products")
