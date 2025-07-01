@@ -15,11 +15,11 @@ st.title("🔍 Scrape All Products and Export")
 base_url = "https://fslidingfeng.en.alibaba.com/productlist-"
 headers = {'User-Agent': 'Mozilla/5.0'}
 
-def get_product_xpaths(index, i_row):
+def get_product_xpaths(index, row_index):
     #image_xpath = f'//*[@id="plist"]/div[3]/div[{index}]/div[1]/a/img'
     #name_xpath = f'//*[@id="plist"]/div[3]/div[{index}]/div[2]/a'
-    image_xpath = f'//*[@id="8919138061"]/div/div/div/div/div[2]/div/div[{i_row}]/div[{index}]/a/div/img'
-    name_xpath = f'//*[@id="8919138061"]/div/div/div/div/div[2]/div/div[{i_row}]/div[{index}]/div[1]'
+    image_xpath = f'//*[@id="8919138061"]/div/div/div/div/div[2]/div/div[{row_index}]/div[{index}]/a/div/img'
+    name_xpath = f'//*[@id="8919138061"]/div/div/div/div/div[2]/div/div[{row_index}]/div[{index}]/div[1]'
     return image_xpath, name_xpath
 
 if "all_products" not in st.session_state:
@@ -30,13 +30,14 @@ if st.sidebar.button("🚀 Start Scraping"):
         all_products = []
         for page in range(1, 33):
             url = f"{base_url}{page}.html?filter=all&sortType=modified-desc&spm=a2700.shop_pl.41413.dbtmnavgo"
+         
             response = requests.get(url, headers=headers)
             response.raise_for_status()
             tree = html.fromstring(response.content)
 
-            for i_row in range(1, 5):
+            for j in range(1, 5):
                 for i in range(1, 5):
-                    image_xpath, name_xpath = get_product_xpaths(i, i_row)
+                    image_xpath, name_xpath = get_product_xpaths(i, j)
                     image_element = tree.xpath(image_xpath)
                     name_element = tree.xpath(name_xpath)
     
