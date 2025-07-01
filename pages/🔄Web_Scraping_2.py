@@ -24,8 +24,8 @@ def get_product_xpaths(index):
 if "all_products" not in st.session_state:
     st.session_state.all_products = []
     
-FormPage = st.text_input("From Page")
-ToPage = st.text_input("To Page")
+FormPage = st.sidebar.text_input("From Page")
+ToPage = st.sidebar.text_input("To Page")
 if st.sidebar.button("🚀 Start Scraping"):
     try:
         all_products = []
