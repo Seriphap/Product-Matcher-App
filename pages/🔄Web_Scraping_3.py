@@ -12,12 +12,9 @@ from rapidfuzz import fuzz
 import time
 import random
 
-
-
 st.title("🔍 Scrape All Products and Export")
 base_url = "https://fslidingfeng.en.alibaba.com/productlist-"
 headers = {'User-Agent': 'Mozilla/5.0'}
-
 
 if "all_products" not in st.session_state:
     st.session_state.all_products = []
