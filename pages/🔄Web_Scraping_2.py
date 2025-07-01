@@ -35,6 +35,8 @@ if st.sidebar.button("🚀 Start Scraping"):
     try:
         all_products = []
         for page in range(int(FormPage), int(ToPage)+1):
+            
+            time.sleep(random.uniform(2.5, 4.5))
             url = f"{base_url}{page}.html?filter=null&sortType=modified-desc&isGallery=N"
             response = requests.get(url, headers=headers)
             response.raise_for_status()
