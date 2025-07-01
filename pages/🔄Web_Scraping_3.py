@@ -18,13 +18,6 @@ st.title("🔍 Scrape All Products and Export")
 base_url = "https://fslidingfeng.en.alibaba.com/productlist-"
 headers = {'User-Agent': 'Mozilla/5.0'}
 
-def get_product_xpaths(index):
-    #image_xpath = f'//*[@id="plist"]/div[3]/div[{index}]/div[1]/a/img'
-    #name_xpath = f'//*[@id="plist"]/div[3]/div[{index}]/div[2]/a'
-    image_xpath = f'//*[@id="8919138061"]/div/div/div/div/div[2]/div/div[{index}]/a/div/img'
-    name_xpath = f'//*[@id="8919138061"]/div/div/div/div/div[2]/div/div[{index}]/div[1]'
-
-    return image_xpath, name_xpath
 
 if "all_products" not in st.session_state:
     st.session_state.all_products = []
@@ -44,7 +37,7 @@ if st.sidebar.button("🚀 Start Scraping"):
             tree = html.fromstring(response.content)
 
             for i in range(1, 17):
-                image_xpath, name_xpath = get_product_xpaths(i)
+                product_xpath = f'//*[@id="8919138061"]/div/div/div/div/div[2]'
                 image_element = tree.xpath(image_xpath)
                 name_element = tree.xpath(name_xpath) 
                 if not image_element or not name_element:
