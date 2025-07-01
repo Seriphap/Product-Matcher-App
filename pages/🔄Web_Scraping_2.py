@@ -28,14 +28,14 @@ if "all_products" not in st.session_state:
 if st.sidebar.button("🚀 Start Scraping"):
     try:
         all_products = []
-        for page in range(1, 2):
+        for page in range(1, 32):
             url = f"{base_url}{page}.html?filter=all&sortType=modified-desc&spm=a2700.shop_pl.41413.dbtmnavgo"
             response = requests.get(url, headers=headers)
             response.raise_for_status()
             tree = html.fromstring(response.content)
 
-            for Nrow in range(1, 5):
-                for i in range(1, 5):
+            for Nrow in range(1, 4):
+                for i in range(1, 4):
                     image_xpath, name_xpath = get_product_xpaths(i, Nrow)
                     image_element = tree.xpath(image_xpath)
                     name_element = tree.xpath(name_xpath)
