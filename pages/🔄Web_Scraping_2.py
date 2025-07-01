@@ -22,7 +22,7 @@ if "all_products" not in st.session_state:
     st.session_state.all_products = []
 
 if st.sidebar.button("🚀 Start Scraping"):
-    try:
+    try:
         all_products = []
         for page in range(1, 33):
             url = f"{base_url}{page}.html?filter=all&sortType=modified-desc&spm=a2700.shop_pl.41413.dbtmnavgo"
@@ -42,14 +42,11 @@ if st.sidebar.button("🚀 Start Scraping"):
 
                 image_url = urljoin(url, image_element[0].get('src'))
                 product_name = name_element[0].text_content().strip()
-
-                # ✅ ป้องกันข้อมูลซ้ำ
                 if product_name not in [p["name"] for p in all_products]:
                     all_products.append({"name": product_name, "image_url": image_url})
 
             st.write(f"🔄 Scraping page {page}... found {len(all_products)} products so far.")
             time.sleep(random.uniform(2.5, 4.5))
-
         st.session_state.all_products = all_products
         st.success(f"✅ Successfully scraped {len(all_products)} unique products")
 
