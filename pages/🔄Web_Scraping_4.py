@@ -74,8 +74,10 @@ if st.sidebar.button("🚀 Start Scraping"):
 
             elif selected_category == "Blow Molding Machines":
                 product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div/div/div'
-                image_xpath = './/a/img/@src'
-                name_xpath = './/div[1]//text()'
+                #image_xpath = './/a/img/@src'
+                #name_xpath = './/div[1]//text()'
+                image_xpath = './/a'
+                name_xpath = './/div[1]'
              
             else:
                 product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div/div'
