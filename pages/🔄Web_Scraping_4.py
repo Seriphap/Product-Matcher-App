@@ -66,12 +66,39 @@ if st.sidebar.button("🚀 Start Scraping"):
             time.sleep(random.uniform(2.5, 4.5))
 
             tree = html.fromstring(response.content)
-            product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div/div'
+
+            if selected_category == "All":
+                product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div/div'
+                image_xpath = './/a/div/img/@src'
+                name_xpath = './/div[1]//text()'
+
+            elif selected_category == "Blow Molding Machines":
+                product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]'
+                image_xpath = './/div/div[1]/div[1]/a/div/div[1]/div/div'
+                name_xpath =  './/div/div[1]/div[1]/div[1]'
+                
+            elif selected_category == "Filler Capper Machines":
+                
+            elif selected_category == "Labeler Rinsing Machines":
+                
+            elif selected_category == "Bottle Washer Machines":
+                
+            elif selected_category == "Wrapping Machines":
+               
+            elif selected_category == "Packer Unpacker":
+                
+            elif selected_category == "PET Water Bottle Spare Parts":
+                
+            elif selected_category == "HSC Spare Parts":
+               
+            else:
+                product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div/div'
+            
             product_elements = tree.xpath(product_xpath)
 
             for product in product_elements:
-                image_element = product.xpath('.//a/div/img/@src')
-                name_element = product.xpath('.//div[1]//text()')
+                image_element = product.xpath(image_xpath)
+                name_element = product.xpath(name_xpath)
                 if not image_element or not name_element:
                     continue
                 image_url = urljoin(url, image_element[0])
