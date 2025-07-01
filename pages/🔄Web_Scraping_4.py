@@ -15,7 +15,7 @@ import random
 st.title("🔍 Scrape All Products and Export")
 
 category_options = {
-    "All" : "https://fslidingfeng.en.alibaba.com/productlist-"
+    "All": "https://fslidingfeng.en.alibaba.com/productlist-",
     "Blow Molding Machines": "https://fslidingfeng.en.alibaba.com/productgrouplist-822252468-",
     "Filler Capper Machines": "https://fslidingfeng.en.alibaba.com/productgrouplist-821937823-",
     "Labeler Rinsing Machines": "https://fslidingfeng.en.alibaba.com/productgrouplist-822009771-",
@@ -97,6 +97,8 @@ if st.session_state.all_products:
             filtered_products = [
                 p for p in st.session_state.all_products
                 if fuzz.partial_ratio(search_query.lower(), p["name"].lower()) > 70
+
+
             ]
         else:
             filtered_products = [
