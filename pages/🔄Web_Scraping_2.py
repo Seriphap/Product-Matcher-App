@@ -48,7 +48,6 @@ if st.sidebar.button("🚀 Start Scraping"):
                     product_name = name_element[0].text_content().strip()
     
                     all_products.append({"name": product_name, "image_url": image_url})
-            time.sleep(5)
 
         st.session_state.all_products = all_products
         st.success(f"✅ Successfully scraped {len(all_products)} products")
