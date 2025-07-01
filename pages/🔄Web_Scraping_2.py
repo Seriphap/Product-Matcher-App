@@ -27,7 +27,7 @@ if "all_products" not in st.session_state:
 if st.sidebar.button("🚀 Start Scraping"):
     try:
         all_products = []
-        for page in range(1, 33):
+        for page in range(1, 2):
             url = f"{base_url}{page}.html?filter=null&sortType=modified-desc&isGallery=N"
             response = requests.get(url, headers=headers)
             response.raise_for_status()
