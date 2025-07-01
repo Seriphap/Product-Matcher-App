@@ -53,9 +53,7 @@ if st.sidebar.button("🚀 Start Scraping"):
 
                 all_products.append({"name": product_name, "image_url": image_url})
             
-            if page % 3 == 0:
-                time.sleep(random.uniform(5, 8))
-
+            time.sleep(random.uniform(2.5, 4.5))
         st.session_state.all_products = all_products
         st.success(f"✅ Successfully scraped {len(all_products)} products")
 
