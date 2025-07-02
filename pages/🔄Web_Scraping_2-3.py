@@ -157,12 +157,9 @@ if st.session_state.all_products:
                             st.warning(f"⚠️ Failed to load image: {e}")
                             st.markdown(f"**{product['name']}**")
                     else:
-                        st.caption("🚫 No image available")
                         st.markdown(f"**{product['name']}**")
+                        st.caption("🚫 No image available")
                     
-
-
-
     if st.sidebar.button("📥 Download CSV"):
         csv = pd.DataFrame(filtered_products).to_csv(index=False).encode('utf-8')
         st.sidebar.download_button("Save CSV File", data=csv, file_name="products.csv", mime="text/csv")
