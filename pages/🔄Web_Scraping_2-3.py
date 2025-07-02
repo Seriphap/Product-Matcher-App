@@ -158,7 +158,7 @@ if st.session_state.all_products:
                             st.markdown(f"**{product['name']}**")
                     else:
                         st.caption("🚫 No image available")
-                        st.markdown(f"**{product['name']}**")
+                        st.write(f"**{product['name']}**")
                     
     if st.sidebar.button("📥 Download CSV"):
         csv = pd.DataFrame(filtered_products).to_csv(index=False).encode('utf-8')
