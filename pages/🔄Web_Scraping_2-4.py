@@ -52,7 +52,7 @@ if st.sidebar.button("🚀 Start Scraping"):
         else:  # Auto scrape all pages
             page = 1
             while True:
-                url = f"{base_url}{page}.html?filter=null&sortType=modified-desc&isGallery=N"
+                url = f"{base_url}{page}/Blow_Molding_Machines.html
                 response = requests.get(url, headers=headers)
                 response.raise_for_status()
                 time.sleep(random.uniform(2.5, 4.5))
