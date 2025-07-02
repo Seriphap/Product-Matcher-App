@@ -69,26 +69,43 @@ def extract_product_columns(tree, product_container_xpath):
     return all_columns
 
 def extract_image_and_name(col_element, base_url):
-    image_element = col_element.xpath(
-        './/img[contains(@class, "react-dove-image")]/@src | .//img/@src'
-    )
-    name_element = col_element.xpath('.//div[1]//text()')
+    """
+    ดึงรูปภาพและชื่อสินค้าจาก column element
+    รองรับทั้ง <img> ปกติ และจากวิดีโอ preview (react-dove-image)
+    """
+    # 1. พยายามดึงจาก react-dove-image (video preview)
+    image_element = col_element.xpath(
+        './/a[contains(@class, "product-image")]//img[contains(@class, "react-dove-image")]/@src'
+    )
 
-    if not image_element or not name_element:
-        return None
+    # 2. ถ้าไม่เจอ ลองดึงจาก <img> ปกติ
+    if not image_element:
+        image_element = col_element.xpath(
+            './/a[contains(@class, "product-image")]//img/@src'
+        )
 
-    image_url = image_element[0]
-    if image_url.startswith("//"):
-        image_url = "https:" + image_url
-    elif image_url.startswith("/"):
-        image_url = urljoin(base_url, image_url)
+    # 3. ดึงชื่อสินค้า (รองรับหลายโครงสร้าง)
+    name_element = col_element.xpath(
+        './/div[contains(@class, "product-info")]//div[contains(@class, "title")]//text() | '
+        './/div[1]//text()'
+    )
 
-    product_name = ''.join(name_element).strip()
+    if not image_element or not name_element:
+        return None
 
-    return {
-        "name": product_name,
-        "image_url": image_url
-    }
+    image_url = image_element[0]
+    if image_url.startswith("//"):
+        image_url = "https:" + image_url
+    elif image_url.startswith("/"):
+        image_url = urljoin(base_url, image_url)
+
+    product_name = ''.join(name_element).strip()
+
+    return {
+        "name": product_name,
+        "image_url": image_url
+    }
+
 
 # -------------------- SCRAPING UI --------------------
 FromPage = st.sidebar.text_input("From Page",value=1)
