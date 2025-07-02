@@ -92,7 +92,7 @@ def extract_image_and_name(col_element, base_url):
 
 # -------------------- SCRAPING UI --------------------
 FromPage = st.sidebar.text_input("From Page",value=1)
-ToPage = st.sidebar.text_input("To Page",value=1)
+ToPage = st.sidebar.text_input("To Page",value=FromPage)
 
 if st.sidebar.button("🚀 Start Scraping"):
     try:
