@@ -69,27 +69,6 @@ def extract_product_columns(tree, product_container_xpath):
     return all_columns
 
 
-def extract_image_and_name(col_element, base_url):
-    image_element = col_element.xpath(
-        './/img[contains(@class, "react-dove-image")]/@src | .//img/@src'
-    )
-    name_element = col_element.xpath('.//div[1]//text()')
-
-    if not image_element or not name_element:
-        return None
-
-    image_url = image_element[0]
-    if image_url.startswith("//"):
-        image_url = "https:" + image_url
-    elif image_url.startswith("/"):
-        image_url = urljoin(base_url, image_url)
-
-    product_name = ''.join(name_element).strip()
-
-    return {
-        "name": product_name,
-        "image_url": image_url
-    }
 
 
 
