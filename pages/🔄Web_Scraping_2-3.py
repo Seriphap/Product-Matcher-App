@@ -157,8 +157,9 @@ if st.session_state.all_products:
                             st.warning(f"⚠️ Failed to load image: {e}")
                             st.markdown(f"**{product['name']}**")
                     else:
-                        st.markdown(f"**{product['name']}**")
                         st.caption("🚫 No image available")
+                        st.markdown(f"**{product['name']}**")
+                    
 
 
 
