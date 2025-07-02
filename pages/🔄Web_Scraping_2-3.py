@@ -155,7 +155,7 @@ if st.session_state.all_products:
                             st.image(product["image_url"], caption=product["name"], width=120)
                         except Exception as e:
                             st.warning(f"⚠️ Failed to load image: {e}")
-                            st.markdown(f"**{product['name']}**")
+                            st.write(f"**{product['name']}**")
                     else:
                         st.caption("🚫 No image available")
                         st.write(f"**{product['name']}**")
