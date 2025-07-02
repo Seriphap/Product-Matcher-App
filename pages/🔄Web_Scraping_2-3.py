@@ -83,10 +83,11 @@ def extract_image_and_name(col_element, base_url):
         image_url = urljoin(base_url, image_url)
 
     product_name = ''.join(name_element).strip()
-    return {Add commentMore actions
+    return {
         "name": product_name,
         "image_url": image_url
-           }
+    }
+
 
 # -------------------- SCRAPING UI --------------------
 FromPage = st.sidebar.text_input("From Page",value=1)
