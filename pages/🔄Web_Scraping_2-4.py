@@ -47,7 +47,7 @@ elif selected_category == "Packer_Unpacker":
 elif selected_category == "PET Water Bottle Spare Parts":
     endpath = "/PET_Water_Bottle_Spare_Parts.html"
 elif selected_category == "HSC Spare Parts":
-    endpath = "/HSC_spare_parts"
+    endpath = "/HSC_spare_parts.html"
 else:
     endpath = ".html"
 
