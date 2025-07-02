@@ -12,6 +12,7 @@ from rapidfuzz import fuzz
 import time
 import random
 
+st.set_page_config(page_title="Alibaba Scraper", layout="wide")
 st.title("🔍 Scrape Alibaba Products and Export")
 
 base_url = "https://fslidingfeng.en.alibaba.com/productgrouplist-822252468-"
@@ -34,26 +35,27 @@ if st.sidebar.button("🚀 Start Scraping"):
 
         def scrape_page(page):
             url = f"{base_url}{page}/Blow_Molding_Machines.html"
-            response = requests.get(url, headers=headers)
+            response = requests.get(url, headers=headers, timeout=10)
             response.raise_for_status()
             time.sleep(random.uniform(2.5, 4.5))
             tree = html.fromstring(response.content)
-            product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div'
+            product_xpath = '//div[contains(@class, "offer-list-row")]//div[contains(@class, "offer-list-item")]'
             product_elements = tree.xpath(product_xpath)
             return [html.tostring(product, encoding='unicode') for product in product_elements]
 
-        if mode == "Select page range":
-            for page in range(int(FromPage), int(ToPage) + 1):
-                raw_html_list = scrape_page(page)
-                all_products.extend({"raw_html": raw_html} for raw_html in raw_html_list)
-        else:
-            page = 1
-            while True:
-                raw_html_list = scrape_page(page)
-                if not raw_html_list:
-                    break
-                all_products.extend({"raw_html": raw_html} for raw_html in raw_html_list)
-                page += 1
+        with st.spinner("🔄 Scraping in progress..."):
+            if mode == "Select page range":
+                for page in range(int(FromPage), int(ToPage) + 1):
+                    raw_html_list = scrape_page(page)
+                    all_products.extend({"raw_html": raw_html} for raw_html in raw_html_list)
+            else:
+                page = 1
+                while True:
+                    raw_html_list = scrape_page(page)
+                    if not raw_html_list:
+                        break
+                    all_products.extend({"raw_html": raw_html} for raw_html in raw_html_list)
+                    page += 1
 
         st.session_state.all_products = all_products
         st.success(f"✅ Scraped {len(all_products)} products")
@@ -99,10 +101,15 @@ if st.session_state.all_products:
             if i + j < len(filtered_products):
                 name, image_url = extract_name_and_image(filtered_products[i + j]["raw_html"])
                 with cols[j]:
-                    if image_url:
-                        st.image(image_url, caption=name, use_column_width=True)
-                    else:
-                        st.markdown(f"**{name}**")
+                    try:
+                        img_response = requests.get(image_url, stream=True, timeout=10)
+                        if img_response.status_code == 200:
+                            img = Image.open(BytesIO(img_response.content))
+                            st.image(img, caption=name, use_container_width=True)
+                        else:
+                            st.warning(f"⚠️ Failed to load image: {image_url}")
+                    except Exception as e:
+                        st.warning(f"⚠️ Error loading image: {e}")
 
     # Export to CSV
     if st.sidebar.button("📥 Download CSV"):
@@ -173,18 +180,22 @@ if username and password and st.sidebar.button("☁️ Upload to MongoDB Atlas")
         db.fs.files.delete_many({})
         db.fs.chunks.delete_many({})
 
-        for item in st.session_state.all_products:
-            name, image_url = extract_name_and_image(item["raw_html"])
-            img_response = requests.get(image_url, stream=True, timeout=10)
-            if img_response.status_code == 200:
-                img_bytes = BytesIO(img_response.content)
-                image_id = fs.put(img_bytes, filename=name + ".png")
+        with st.spinner("☁️ Uploading to MongoDB..."):
+            for item in st.session_state.all_products:
+                name, image_url = extract_name_and_image(item["raw_html"])
+                try:
+                    img_response = requests.get(image_url, stream=True, timeout=10)
+                    if img_response.status_code == 200:
+                        img_bytes = BytesIO(img_response.content)
+                        image_id = fs.put(img_bytes, filename=name + ".png")
 
-                collection.insert_one({
-                    "name": name,
-                    "image_url": image_url,
-                    "image_file_id": image_id
-                })
+                        collection.insert_one({
+                            "name": name,
+                            "image_url": image_url,
+                            "image_file_id": image_id
+                        })
+                except:
+                    continue
 
         st.sidebar.success("✅ Uploaded products and images to MongoDB Atlas")
 
