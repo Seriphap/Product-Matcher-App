@@ -18,6 +18,13 @@ st.title("🔍 Scrape All Products and Export")
 category_options = {
     "All": "https://fslidingfeng.en.alibaba.com/productlist-",
     "Blow Molding Machines": "https://fslidingfeng.en.alibaba.com/productgrouplist-822252468-",
+    "Filler Capper Machines": "https://fslidingfeng.en.alibaba.com/productgrouplist-821937823-",
+    "Labeler Rinsing Machines": "https://fslidingfeng.en.alibaba.com/productgrouplist-822009771-",
+    "Bottle Washer Machines": "https://fslidingfeng.en.alibaba.com/productgrouplist-822274262-",
+    "Wrapping Machines": "https://fslidingfeng.en.alibaba.com/productgrouplist-822158603-",
+    "Packer Unpacker": "https://fslidingfeng.en.alibaba.com/productgrouplist-822019527-",
+    "PET Water Bottle Spare Parts": "https://fslidingfeng.en.alibaba.com/productgrouplist-822081922-",
+    "HSC Spare Parts": "https://fslidingfeng.en.alibaba.com/productgrouplist-822746774-"
 }
 selected_category = st.sidebar.selectbox("📂 Select Product Category", list(category_options.keys()))
 base_url = category_options[selected_category]
@@ -27,6 +34,20 @@ if selected_category == "All":
     endpath = ".html"
 elif selected_category == "Blow Molding Machines":
     endpath = "/Blow_Molding_Machines.html"
+elif selected_category == "Filler Capper Machines":
+    endpath = "/Filler_Capper_Machines.html"
+elif selected_category == "Labeler Rinsing Machines":
+    endpath = "/Labeler_Rinsing_Machines.html"
+elif selected_category == "Bottle Washer Machines":
+    endpath = "/Bottle_Washer_Machines.html"
+elif selected_category == "Wrapping_Machines":
+    endpath = "/Wrapping_Machines.html"
+elif selected_category == "Packer_Unpacker":
+    endpath = "/Packer_Unpacker.html"
+elif selected_category == "PET Water Bottle Spare Parts":
+    endpath = "/PET_Water_Bottle_Spare_Parts.html"
+elif selected_category == "HSC Spare Parts":
+    endpath = "/HSC_Spare_Parts"
 else:
     endpath = ".html"
 
