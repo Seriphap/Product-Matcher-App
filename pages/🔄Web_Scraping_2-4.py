@@ -40,7 +40,7 @@ elif selected_category == "Labeler Rinsing Machines":
     endpath = "/Labeler_Rinsing_Machines.html"
 elif selected_category == "Bottle Washer Machines":
     endpath = "/Bottle_Washer_Machines.html"
-elif selected_category == "Wrapping_Machines":
+elif selected_category == "Wrapping Machines":
     endpath = "/Wrapping_Machines.html"
 elif selected_category == "Packer_Unpacker":
     endpath = "/Packer_Unpacker.html"
