@@ -58,7 +58,7 @@ if st.sidebar.button("🚀 Start Scraping"):
                 time.sleep(random.uniform(2.5, 4.5))
 
                 tree = html.fromstring(response.content)
-                product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div/div'
+                product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div'
                 product_elements = tree.xpath(product_xpath)
 
                 if not product_elements:
