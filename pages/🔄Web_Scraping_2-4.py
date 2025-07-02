@@ -1,38 +1,75 @@
 import streamlit as st
 import requests
 from lxml import html
-from urllib.parse import urljoin
+from urllib.parse import urljoin, quote_plus
 import pandas as pd
 from io import BytesIO
 from PIL import Image
 import xlsxwriter
 from pymongo import MongoClient
+from gridfs import GridFS
 from rapidfuzz import fuzz
 import time
 import random
 
 st.title("🔍 Scrape All Products and Export")
 
+# -------------------- CATEGORY SETUP --------------------
 category_options = {
     "All": "https://fslidingfeng.en.alibaba.com/productlist-",
     "Blow Molding Machines": "https://fslidingfeng.en.alibaba.com/productgrouplist-822252468-",
 }
-
 selected_category = st.sidebar.selectbox("📂 Select Product Category", list(category_options.keys()))
 base_url = category_options[selected_category]
 headers = {'User-Agent': 'Mozilla/5.0'}
 
 if selected_category == "All":
-    endpath = ".html?filter=null&sortType=modified-desc&isGallery=N"
+    endpath = ".html?filter=all&sortType=modified-desc&spm=a2700.shop_pl.41413.dbtmnavgo"
 elif selected_category == "Blow Molding Machines":
     endpath = "/Blow_Molding_Machines.html"
-
 else:
-    endpath = ".html"  # fallback
+    endpath = ".html"
 
 if "all_products" not in st.session_state:
     st.session_state.all_products = []
 
+# -------------------- SCRAPING FUNCTIONS --------------------
+def extract_product_columns(tree, product_container_xpath):
+    all_columns = []
+    rows = tree.xpath(product_container_xpath + '/div/div')
+    for row_index, row in enumerate(rows, start=1):
+        columns = row.xpath('./div')
+        for col_index, col in enumerate(columns, start=1):
+            all_columns.append({
+                "row": row_index,
+                "column": col_index,
+                "element": col
+            })
+    return all_columns
+
+def extract_image_and_name(col_element, base_url):
+    image_element = col_element.xpath(
+        './/img[contains(@class, "react-dove-image")]/@src | .//img/@src'
+    )
+    name_element = col_element.xpath('.//div[1]//text()')
+
+    if not image_element or not name_element:
+        return None
+
+    image_url = image_element[0]
+    if image_url.startswith("//"):
+        image_url = "https:" + image_url
+    elif image_url.startswith("/"):
+        image_url = urljoin(base_url, image_url)
+
+    product_name = ''.join(name_element).strip()
+
+    return {
+        "name": product_name,
+        "image_url": image_url
+    }
+
+# -------------------- SCRAPING UI --------------------
 FromPage = st.sidebar.text_input("From Page")
 ToPage = st.sidebar.text_input("To Page")
 
@@ -46,30 +83,13 @@ if st.sidebar.button("🚀 Start Scraping"):
             time.sleep(random.uniform(2.5, 4.5))
 
             tree = html.fromstring(response.content)
+            product_container_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]'
+            columns = extract_product_columns(tree, product_container_xpath)
 
-            if selected_category == "All":
-                product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div/div'
-                image_xpath = './/a/div/img/@src'
-                name_xpath = './/div[1]//text()'
-
-            elif selected_category == "Blow Molding Machines":
-                product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div/div/div'
-                image_xpath = './/a[@class="product-image"]//img/@src'
-                name_xpath = './/div[@class="product-info"]//div[@class="title clamped"]//span[@class="title-con"]/text()'
-            else:
-                product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div/div'
-            
-            product_elements = tree.xpath(product_xpath)
-            for product in product_elements:
-                image_element = product.xpath(f'{image_xpath}')
-                name_element = product.xpath(f'{name_xpath}')
-                if not image_element or not name_element:
-                    continue
-                image_url = urljoin(url, image_element[0])
-                product_name = ''.join(name_element).strip()
-                all_products.append({"name": product_name, "image_url": image_url})
-
-            time.sleep(random.uniform(2.5, 4.5))
+            for col in columns:
+                result = extract_image_and_name(col["element"], url)
+                if result:
+                    all_products.append(result)
 
         st.session_state.all_products = all_products
         st.success(f"✅ Successfully scraped {len(all_products)} products")
@@ -77,6 +97,7 @@ if st.sidebar.button("🚀 Start Scraping"):
     except Exception as e:
         st.error(f"An error occurred: {e}")
 
+# -------------------- DISPLAY & EXPORT --------------------
 if st.session_state.all_products:
     st.markdown("### 🔎 Search Product Name")
     search_query = st.text_input("Enter keyword to filter products")
@@ -87,7 +108,6 @@ if st.session_state.all_products:
             filtered_products = [
                 p for p in st.session_state.all_products
                 if fuzz.partial_ratio(search_query.lower(), p["name"].lower()) > 70
-
             ]
         else:
             filtered_products = [
@@ -105,8 +125,6 @@ if st.session_state.all_products:
                 with cols[j]:
                     st.image(filtered_products[i + j]["image_url"], caption=filtered_products[i + j]["name"], width=120)
 
-
-    # 📥 ปุ่มใน Sidebar (ทำงานเมื่อกดเท่านั้น)
     if st.sidebar.button("📥 Download CSV"):
         csv = pd.DataFrame(filtered_products).to_csv(index=False).encode('utf-8')
         st.sidebar.download_button("Save CSV File", data=csv, file_name="products.csv", mime="text/csv")
@@ -151,14 +169,13 @@ if st.session_state.all_products:
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
+# -------------------- MONGODB UPLOAD --------------------
 st.sidebar.markdown("### 🔐 MongoDB Login")
 username = st.sidebar.text_input("Username")
 password = st.sidebar.text_input("Password", type="password")
 
 if username and password and st.sidebar.button("☁️ Upload to MongoDB Atlas"):
     try:
-        from gridfs import GridFS
-        from urllib.parse import quote_plus
         encoded_password = quote_plus(password)
         mongo_uri = f"mongodb+srv://{username}:{encoded_password}@cluster0.hnvlg44.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
         client = MongoClient(mongo_uri)
@@ -166,7 +183,6 @@ if username and password and st.sidebar.button("☁️ Upload to MongoDB Atlas")
         collection = db["products"]
         fs = GridFS(db)
 
-        # ล้างข้อมูลเก่า
         collection.delete_many({})
         db.fs.files.delete_many({})
         db.fs.chunks.delete_many({})
@@ -187,4 +203,3 @@ if username and password and st.sidebar.button("☁️ Upload to MongoDB Atlas")
 
     except Exception as e:
         st.sidebar.error(f"❌ Upload failed: {e}")
-  
