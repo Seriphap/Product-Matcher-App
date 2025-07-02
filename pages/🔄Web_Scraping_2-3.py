@@ -69,10 +69,14 @@ def extract_product_columns(tree, product_container_xpath):
     return all_columns
 
 def extract_image_and_name(col_element, base_url):
-    image_element = col_element.xpath(
-        './/img[contains(@class, "react-dove-image")]/@src | .//img/@src'
-    )
+    # ดึงimage
+    image_element = col_element.xpath('.//img[contains(@class, "react-dove-image")]/@src | .//img/@src')
+    if not image_element:
+        image_element = col_element.xpath('.//div[contains(@class, "react-dove-placeholder")]//img/@src')
+    # ดึงชื่อสินค้า
     name_element = col_element.xpath('.//div[1]//text()')
+    if not name_element:
+        name_element = col_element.xpath('.//div[contains(@class, "title")]//span/text()'                                    
     if not image_element or not name_element:
         return None
 
