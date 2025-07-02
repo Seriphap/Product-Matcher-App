@@ -74,21 +74,24 @@ def extract_image_and_name(col_element, base_url):
     )
     name_element = col_element.xpath('.//div[1]//text()')
 
-    if not image_element or not name_element:
-        return None
-
-    image_url = image_element[0]
-    if image_url.startswith("//"):
-        image_url = "https:" + image_url
-    elif image_url.startswith("/"):
-        image_url = urljoin(base_url, image_url)
+    if not name_element:
+        return None  # ถ้าไม่มีชื่อสินค้าเลย ก็ไม่ต้องเก็บ
 
     product_name = ''.join(name_element).strip()
 
+    image_url = None
+    if image_element:
+        image_url = image_element[0]
+        if image_url.startswith("//"):
+            image_url = "https:" + image_url
+        elif image_url.startswith("/"):
+            image_url = urljoin(base_url, image_url)
+
     return {
         "name": product_name,
-        "image_url": image_url
+        "image_url": image_url  # อาจเป็น None ได้
     }
+
 
 # -------------------- SCRAPING UI --------------------
 FromPage = st.sidebar.text_input("From Page",value=1)
