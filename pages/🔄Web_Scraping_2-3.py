@@ -69,10 +69,7 @@ def extract_product_columns(tree, product_container_xpath):
     return all_columns
 
 def extract_image_and_name(col_element, base_url):
-    """
-    ดึงรูปภาพและชื่อสินค้าจาก column element
-    รองรับทั้ง <img> ปกติ และจากวิดีโอ preview (react-dove-image)
-    """
+
     # 1. พยายามดึงจาก react-dove-image (video preview)
     image_element = col_element.xpath(
         './/a[contains(@class, "product-image")]//img[contains(@class, "react-dove-image")]/@src'
