@@ -24,7 +24,7 @@ base_url = category_options[selected_category]
 headers = {'User-Agent': 'Mozilla/5.0'}
 
 if selected_category == "All":
-    endpath = ".html?filter=all&sortType=modified-desc&spm=a2700.shop_pl.41413.dbtmnavgo"
+    endpath = ".html"
 elif selected_category == "Blow Molding Machines":
     endpath = "/Blow_Molding_Machines.html"
 else:
