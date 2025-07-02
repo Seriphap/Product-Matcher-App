@@ -94,7 +94,7 @@ def extract_image_and_name(col_element, base_url):
     product_name = ''.join(name_element).strip()
 
     # ถ้ามีรูปภาพ ค่อยจัดการ URL
-    image_url = None
+    image_url = "No image"
     if image_element:
         image_url = image_element[0]
         if image_url.startswith("//"):
