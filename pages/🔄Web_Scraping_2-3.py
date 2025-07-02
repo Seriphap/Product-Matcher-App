@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 from lxml import html
-from urllib.parse import urljoin, quote_plus
+from urllib.parse import urljoin
 import pandas as pd
 from io import BytesIO
 from PIL import Image
@@ -69,31 +69,19 @@ def extract_product_columns(tree, product_container_xpath):
     return all_columns
 
 def extract_image_and_name(col_element, base_url):
-    # ดึงรูปภาพจาก <img> ปกติ
-    image_element = col_element.xpath(
-        './/img[contains(@class, "react-dove-image")]/@src | .//img/@src'
-    )
-    
-    # ถ้าไม่เจอ ลองหาใน placeholder
+    image_element = col_element.xpath('.//img[contains(@class, "react-dove-image")]/@src | .//img/@src')
     if not image_element:
-        image_element = col_element.xpath(
-            './/div[contains(@class, "react-dove-placeholder")]//img/@src'
-        )
+        image_element = col_element.xpath('.//div[contains(@class, "react-dove-placeholder")]//img/@src')
 
-    # ดึงชื่อสินค้า
     name_element = col_element.xpath('.//div[1]//text()')
     if not name_element:
-        name_element = col_element.xpath(
-            './/div[contains(@class, "title")]//span/text()'
-        )
+        name_element = col_element.xpath('.//div[contains(@class, "title")]//span/text()')
 
-    # ถ้าไม่มีชื่อเลย ไม่ต้องเก็บ
     if not name_element:
         return None
 
     product_name = ''.join(name_element).strip()
 
-    # ถ้ามีรูปภาพ ค่อยจัดการ URL
     image_url = None
     if image_element:
         image_url = image_element[0]
@@ -104,14 +92,12 @@ def extract_image_and_name(col_element, base_url):
 
     return {
         "name": product_name,
-        "image_url": image_url  # อาจเป็น None ได้
+        "image_url": image_url
     }
 
-
-
 # -------------------- SCRAPING UI --------------------
-FromPage = st.sidebar.text_input("From Page",value=1)
-ToPage = st.sidebar.text_input("To Page",value=FromPage)
+FromPage = st.sidebar.text_input("From Page", value=1)
+ToPage = st.sidebar.text_input("To Page", value=FromPage)
 
 if st.sidebar.button("🚀 Start Scraping"):
     try:
@@ -157,23 +143,23 @@ if st.session_state.all_products:
     else:
         filtered_products = st.session_state.all_products
 
-    
     st.markdown("### 🖼️ Product Gallery")
     for i in range(0, len(filtered_products), 4):
-        cols = st.columns(4)
-        for j in range(4):
-            if i + j < len(filtered_products):
-                product = filtered_products[i + j]
-                with cols[j]:
-                    if product["image_url"] and product["image_url"].startswith("http"):
-                        try:
-                            st.image(product["image_url"], caption=product["name"], width=120)
-                        except Exception as e:
-                            st.warning(f"⚠️ Failed to load image: {e}")
-                            st.markdown(f"**{product['name']}**")
-                    else:
-                        st.markdown(f"**{product['name']}**")
-                        st.caption("🚫 No image available")
+        cols = st.columns(4)
+        for j in range(4):
+            if i + j < len(filtered_products):
+                product = filtered_products[i + j]
+                with cols[j]:
+                    if product["image_url"] and product["image_url"].startswith("http"):
+                        try:
+                            st.image(product["image_url"], caption=product["name"], width=120)
+                        except Exception as e:
+                            st.warning(f"⚠️ Failed to load image: {e}")
+                            st.markdown(f"**{product['name']}**")
+                    else:
+                        st.markdown(f"**{product['name']}**")
+                        st.caption("🚫 No image available")
+
 
 
     if st.sidebar.button("📥 Download CSV"):
