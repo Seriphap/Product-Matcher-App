@@ -38,7 +38,10 @@ if st.sidebar.button("🚀 Start Scraping"):
             response.raise_for_status()
             time.sleep(random.uniform(2.5, 4.5))
             tree = html.fromstring(response.content)
-            product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div'
+            product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]'
+         
+            
+            
             product_elements = tree.xpath(product_xpath)
             return [html.tostring(product, encoding='unicode') for product in product_elements]
 
