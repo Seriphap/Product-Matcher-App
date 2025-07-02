@@ -1,80 +1,82 @@
 import streamlit as st
 import requests
 from lxml import html
-from urllib.parse import quote_plus
+from urllib.parse import urljoin
 import pandas as pd
 from io import BytesIO
 from PIL import Image
 import xlsxwriter
 from pymongo import MongoClient
-from gridfs import GridFS
 from rapidfuzz import fuzz
 import time
 import random
 
-st.set_page_config(page_title="Alibaba Scraper", layout="wide")
-st.title("🔍 Scrape Alibaba Products and Export")
+st.title("🔍 Scrape All Products and Export")
 
-base_url = "https://fslidingfeng.en.alibaba.com/productgrouplist-822252468-"
+category_options = {
+    "All": "https://fslidingfeng.en.alibaba.com/productlist-",
+    "Blow Molding Machines": "https://fslidingfeng.en.alibaba.com/productgrouplist-822252468-",
+}
+
+selected_category = st.sidebar.selectbox("📂 Select Product Category", list(category_options.keys()))
+base_url = category_options[selected_category]
 headers = {'User-Agent': 'Mozilla/5.0'}
+
+if selected_category == "All":
+    endpath = ".html?filter=null&sortType=modified-desc&isGallery=N"
+elif selected_category == "Blow Molding Machines":
+    endpath = "/Blow_Molding_Machines.html"
+
+else:
+    endpath = ".html"  # fallback
 
 if "all_products" not in st.session_state:
     st.session_state.all_products = []
 
-# Sidebar options
-mode = st.sidebar.radio("📄 Select scraping mode", ["Select page range", "Auto scrape all pages"])
+FromPage = st.sidebar.text_input("From Page")
+ToPage = st.sidebar.text_input("To Page")
 
-if mode == "Select page range":
-    FromPage = st.sidebar.text_input("From Page", value="1")
-    ToPage = st.sidebar.text_input("To Page", value=f"{FromPage}")
-
-# Scraping logic
 if st.sidebar.button("🚀 Start Scraping"):
     try:
         all_products = []
-
-        def scrape_page(page):
-            url = f"{base_url}{page}/Blow_Molding_Machines.html"
-            response = requests.get(url, headers=headers, timeout=10)
+        for page in range(int(FromPage), int(ToPage) + 1):
+            url = f"{base_url}{page}{endpath}"
+            response = requests.get(url, headers=headers)
             response.raise_for_status()
             time.sleep(random.uniform(2.5, 4.5))
-            tree = html.fromstring(response.content)
-            product_xpath = '//div[contains(@class, "offer-list-row")]//div[contains(@class, "offer-list-item")]'
-            product_elements = tree.xpath(product_xpath)
-            return [html.tostring(product, encoding='unicode') for product in product_elements]
 
-        with st.spinner("🔄 Scraping in progress..."):
-            if mode == "Select page range":
-                for page in range(int(FromPage), int(ToPage) + 1):
-                    raw_html_list = scrape_page(page)
-                    all_products.extend({"raw_html": raw_html} for raw_html in raw_html_list)
+            tree = html.fromstring(response.content)
+
+            if selected_category == "All":
+                product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div/div'
+                image_xpath = './/a/div/img/@src'
+                name_xpath = './/div[1]//text()'
+
+            elif selected_category == "Blow Molding Machines":
+                product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div/div/div'
+                image_xpath = './/a[@class="product-image"]//img/@src'
+                name_xpath = './/div[@class="product-info"]//div[@class="title clamped"]//span[@class="title-con"]/text()'
             else:
-                page = 1
-                while True:
-                    raw_html_list = scrape_page(page)
-                    if not raw_html_list:
-                        break
-                    all_products.extend({"raw_html": raw_html} for raw_html in raw_html_list)
-                    page += 1
+                product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div/div'
+            
+            product_elements = tree.xpath(product_xpath)
+            for product in product_elements:
+                image_element = product.xpath(f'{image_xpath}')
+                name_element = product.xpath(f'{name_xpath}')
+                if not image_element or not name_element:
+                    continue
+                image_url = urljoin(url, image_element[0])
+                product_name = ''.join(name_element).strip()
+                all_products.append({"name": product_name, "image_url": image_url})
+
+            time.sleep(random.uniform(2.5, 4.5))
 
         st.session_state.all_products = all_products
-        st.success(f"✅ Scraped {len(all_products)} products")
+        st.success(f"✅ Successfully scraped {len(all_products)} products")
 
     except Exception as e:
-        st.error(f"❌ Error occurred: {e}")
+        st.error(f"An error occurred: {e}")
 
-# Function to extract name and image URL from raw HTML
-def extract_name_and_image(raw_html):
-    try:
-        tree = html.fromstring(raw_html)
-        name = ''.join(tree.xpath('.//div[1]//text()')).strip()
-        image_url = tree.xpath('.//img/@src')
-        image_url = image_url[0] if image_url else ""
-        return name, image_url
-    except:
-        return "", ""
-
-# Display and export
 if st.session_state.all_products:
     st.markdown("### 🔎 Search Product Name")
     search_query = st.text_input("Enter keyword to filter products")
@@ -84,43 +86,31 @@ if st.session_state.all_products:
         if fuzzy_option:
             filtered_products = [
                 p for p in st.session_state.all_products
-                if fuzz.partial_ratio(search_query.lower(), extract_name_and_image(p["raw_html"])[0].lower()) > 70
+                if fuzz.partial_ratio(search_query.lower(), p["name"].lower()) > 70
+
             ]
         else:
             filtered_products = [
                 p for p in st.session_state.all_products
-                if search_query.lower() in extract_name_and_image(p["raw_html"])[0].lower()
+                if search_query.lower() in p["name"].lower()
             ]
     else:
         filtered_products = st.session_state.all_products
 
     st.markdown("### 🖼️ Product Gallery")
-    for i in range(0, len(filtered_products), 2):
-        cols = st.columns(2)
-        for j in range(2):
+    for i in range(0, len(filtered_products), 4):
+        cols = st.columns(4)
+        for j in range(4):
             if i + j < len(filtered_products):
-                name, image_url = extract_name_and_image(filtered_products[i + j]["raw_html"])
                 with cols[j]:
-                    try:
-                        img_response = requests.get(image_url, stream=True, timeout=10)
-                        if img_response.status_code == 200:
-                            img = Image.open(BytesIO(img_response.content))
-                            st.image(img, caption=name, use_container_width=True)
-                        else:
-                            st.warning(f"⚠️ Failed to load image: {image_url}")
-                    except Exception as e:
-                        st.warning(f"⚠️ Error loading image: {e}")
+                    st.image(filtered_products[i + j]["image_url"], caption=filtered_products[i + j]["name"], width=120)
 
-    # Export to CSV
+
+    # 📥 ปุ่มใน Sidebar (ทำงานเมื่อกดเท่านั้น)
     if st.sidebar.button("📥 Download CSV"):
-        export_data = []
-        for item in filtered_products:
-            name, image_url = extract_name_and_image(item["raw_html"])
-            export_data.append({"name": name, "image_url": image_url})
-        csv = pd.DataFrame(export_data).to_csv(index=False).encode('utf-8')
+        csv = pd.DataFrame(filtered_products).to_csv(index=False).encode('utf-8')
         st.sidebar.download_button("Save CSV File", data=csv, file_name="products.csv", mime="text/csv")
 
-    # Export to Excel
     if st.sidebar.button("📥 Download Excel"):
         output = BytesIO()
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
@@ -131,25 +121,25 @@ if st.session_state.all_products:
         worksheet.write("C1", "Image")
 
         row = 1
-        for item in filtered_products:
-            name, image_url = extract_name_and_image(item["raw_html"])
-            worksheet.write(row, 0, name)
-            worksheet.write(row, 1, image_url)
+        for product in filtered_products:
+            worksheet.write(row, 0, product["name"])
+            worksheet.write(row, 1, product["image_url"])
 
             try:
-                img_response = requests.get(image_url, stream=True, timeout=10)
+                img_response = requests.get(product["image_url"], stream=True, timeout=10)
                 if img_response.status_code == 200:
                     img = Image.open(BytesIO(img_response.content))
                     img.thumbnail((100, 100))
                     img_byte_arr = BytesIO()
                     img.save(img_byte_arr, format='PNG')
-                    worksheet.insert_image(row, 2, name + ".png", {
+                    worksheet.insert_image(row, 2, product["name"] + ".png", {
                         'image_data': img_byte_arr,
                         'x_scale': 1,
                         'y_scale': 1
                     })
             except:
                 pass
+
             row += 1
 
         workbook.close()
@@ -161,13 +151,14 @@ if st.session_state.all_products:
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
-# MongoDB Upload
-st.sidebar.markdown("### ☁️ MongoDB Atlas Upload")
+st.sidebar.markdown("### 🔐 MongoDB Login")
 username = st.sidebar.text_input("Username")
 password = st.sidebar.text_input("Password", type="password")
 
 if username and password and st.sidebar.button("☁️ Upload to MongoDB Atlas"):
     try:
+        from gridfs import GridFS
+        from urllib.parse import quote_plus
         encoded_password = quote_plus(password)
         mongo_uri = f"mongodb+srv://{username}:{encoded_password}@cluster0.hnvlg44.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
         client = MongoClient(mongo_uri)
@@ -175,29 +166,25 @@ if username and password and st.sidebar.button("☁️ Upload to MongoDB Atlas")
         collection = db["products"]
         fs = GridFS(db)
 
-        # Clear old data
+        # ล้างข้อมูลเก่า
         collection.delete_many({})
         db.fs.files.delete_many({})
         db.fs.chunks.delete_many({})
 
-        with st.spinner("☁️ Uploading to MongoDB..."):
-            for item in st.session_state.all_products:
-                name, image_url = extract_name_and_image(item["raw_html"])
-                try:
-                    img_response = requests.get(image_url, stream=True, timeout=10)
-                    if img_response.status_code == 200:
-                        img_bytes = BytesIO(img_response.content)
-                        image_id = fs.put(img_bytes, filename=name + ".png")
+        for product in st.session_state.all_products:
+            img_response = requests.get(product["image_url"], stream=True, timeout=10)
+            if img_response.status_code == 200:
+                img_bytes = BytesIO(img_response.content)
+                image_id = fs.put(img_bytes, filename=product["name"] + ".png")
 
-                        collection.insert_one({
-                            "name": name,
-                            "image_url": image_url,
-                            "image_file_id": image_id
-                        })
-                except:
-                    continue
+                collection.insert_one({
+                    "name": product["name"],
+                    "image_url": product["image_url"],
+                    "image_file_id": image_id
+                })
 
         st.sidebar.success("✅ Uploaded products and images to MongoDB Atlas")
 
     except Exception as e:
         st.sidebar.error(f"❌ Upload failed: {e}")
+  
