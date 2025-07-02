@@ -38,10 +38,7 @@ if st.sidebar.button("🚀 Start Scraping"):
             response.raise_for_status()
             time.sleep(random.uniform(2.5, 4.5))
             tree = html.fromstring(response.content)
-            product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]'
-         
-            
-            
+            product_xpath = '//*[@id="8919138061"]/div/div/div/div/div[2]/div'
             product_elements = tree.xpath(product_xpath)
             return [html.tostring(product, encoding='unicode') for product in product_elements]
 
@@ -69,7 +66,7 @@ def extract_name_and_image(raw_html):
     try:
         tree = html.fromstring(raw_html)
         name = ''.join(tree.xpath('.//div[1]//text()')).strip()
-        image_url = tree.xpath('.//a/div/img/@src')
+        image_url = tree.xpath('.//img/@src')
         image_url = image_url[0] if image_url else ""
         return name, image_url
     except:
@@ -100,8 +97,12 @@ if st.session_state.all_products:
         cols = st.columns(2)
         for j in range(2):
             if i + j < len(filtered_products):
+                name, image_url = extract_name_and_image(filtered_products[i + j]["raw_html"])
                 with cols[j]:
-                    st.markdown(filtered_products[i + j]["raw_html"], unsafe_allow_html=True)
+                    if image_url:
+                        st.image(image_url, caption=name, use_column_width=True)
+                    else:
+                        st.markdown(f"**{name}**")
 
     # Export to CSV
     if st.sidebar.button("📥 Download CSV"):
