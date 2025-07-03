@@ -82,13 +82,30 @@ if st.session_state.all_products:
         filtered_products = st.session_state.all_products
 
     # 🖼️ แสดงภาพทันที
+    #st.markdown("### 🖼️ Product Gallery")
+    #for i in range(0, len(filtered_products), 4):
+    #    cols = st.columns(4)
+    #    for j in range(4):
+    #        if i + j < len(filtered_products):
+    #            with cols[j]:
+    #                st.image(filtered_products[i + j]["image_url"], caption=filtered_products[i + j]["name"], width=120)
+
     st.markdown("### 🖼️ Product Gallery")
     for i in range(0, len(filtered_products), 4):
         cols = st.columns(4)
         for j in range(4):
             if i + j < len(filtered_products):
+                product = filtered_products[i + j]
                 with cols[j]:
-                    st.image(filtered_products[i + j]["image_url"], caption=filtered_products[i + j]["name"], width=120)
+                    if product["image_url"] and product["image_url"].startswith("http"):
+                        try:
+                            st.image(product["image_url"], caption=product["name"], width=120)
+                        except Exception as e:
+                            st.warning(f"⚠️ Failed to load image: {e}")
+                            st.write(f"**{product['name']}**")
+                    else:
+                        st.caption("🚫 No image available")
+                        st.write(f"**{product['name']}**")
 
     # 📥 ปุ่มใน Sidebar (ทำงานเมื่อกดเท่านั้น)
     if st.sidebar.button("📥 Download CSV"):
