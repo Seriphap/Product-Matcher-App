@@ -80,9 +80,9 @@ if st.session_state.all_products:
     #                st.image(filtered_products[i + j]["image_url"], caption=filtered_products[i + j]["name"], width=120)
 
     st.markdown("### 🖼️ Product Gallery")
-    for i in range(0, len(filtered_products), 4):
-        cols = st.columns(4)
-        for j in range(4):
+    for i in range(0, len(filtered_products), 5):
+        cols = st.columns(5)
+        for j in range(5):
             if i + j < len(filtered_products):
                 product = filtered_products[i + j]
                 with cols[j]:
