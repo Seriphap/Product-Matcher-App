@@ -64,27 +64,25 @@ if "all_products" in st.session_state and st.session_state.all_products:
                 with cols[j]:
                     st.image(filtered_products[i + j]["image_url"], caption=filtered_products[i + j]["name"], width=120)
     
-    # 📥 Download CSV
+    # 📥 ปุ่มใน Sidebar (ทำงานเมื่อกดเท่านั้น)
     if st.sidebar.button("📥 Download CSV"):
         csv = pd.DataFrame(filtered_products).to_csv(index=False).encode('utf-8')
         st.sidebar.download_button("Save CSV File", data=csv, file_name="products.csv", mime="text/csv")
 
-    # 📥 Download Excel
     if st.sidebar.button("📥 Download Excel"):
         output = BytesIO()
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
         worksheet = workbook.add_worksheet("Products")
-    
-        # เขียนหัวตาราง
+
         worksheet.write("A1", "Product Name")
         worksheet.write("B1", "Image URL")
         worksheet.write("C1", "Image")
-    
+
         row = 1
         for product in filtered_products:
             worksheet.write(row, 0, product["name"])
             worksheet.write(row, 1, product["image_url"])
-    
+
             try:
                 img_response = requests.get(product["image_url"], stream=True, timeout=10)
                 if img_response.status_code == 200:
@@ -99,15 +97,15 @@ if "all_products" in st.session_state and st.session_state.all_products:
                     })
             except:
                 pass
+
             row += 1
-        
+
         workbook.close()
         output.seek(0)
-    
         st.sidebar.download_button(
             label="Save Excel File",
             data=output,
-            file_name="products.xlsx",
+            file_name="products_with_images.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
