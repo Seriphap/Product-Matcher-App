@@ -19,12 +19,12 @@ headers = {'User-Agent': 'Mozilla/5.0'}
 if "all_products" not in st.session_state:
     st.session_state.all_products = []
     
-FormPage = st.sidebar.text_input("From Page")
-ToPage = st.sidebar.text_input("To Page")
+FromPage = st.sidebar.text_input("From Page", value=1)
+ToPage = st.sidebar.text_input("To Page", value=FromPage)
 if st.sidebar.button("🚀 Start Scraping"):
     try:
         all_products = []
-        for page in range(int(FormPage), int(ToPage)+1):
+        for page in range(int(FromPage), int(ToPage)+1):
             url = f"{base_url}{page}.html?filter=null&sortType=modified-desc&isGallery=N"
             response = requests.get(url, headers=headers)
             response.raise_for_status()
